@@ -1,0 +1,126 @@
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { BookOpen } from 'lucide-react';
+import { buildBookTree } from './data/books.js';
+import { loadProgress, loadCustomVocab, addCustomVocab } from './db/db.js';
+import BookPicker from './components/BookPicker.jsx';
+import ReviewSession from './components/ReviewSession.jsx';
+import AddWord from './components/AddWord.jsx';
+import { C } from './theme.js';
+
+// Top-level state machine: 'picker' | 'review' | 'add'. Loads progress and
+// custom vocab from IndexedDB once, then hands slices to each screen.
+export default function App() {
+  const [progressMap, setProgressMap] = useState(null);
+  const [customVocab, setCustomVocab] = useState([]);
+  const [harakat, setHarakat] = useState(true);
+  const [view, setView] = useState('picker');
+  const [scope, setScope] = useState(null);
+  const [addBookId, setAddBookId] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      const [p, c] = await Promise.all([loadProgress(), loadCustomVocab()]);
+      setProgressMap(p);
+      setCustomVocab(c);
+    })();
+  }, []);
+
+  const tree = useMemo(() => buildBookTree(customVocab), [customVocab]);
+
+  // `cardId` is the composite `${vocabId}::${direction}` key from useReview/db.
+  const handleProgressChange = useCallback((cardId, card) => {
+    setProgressMap((m) => ({ ...m, [cardId]: { id: cardId, ...card } }));
+  }, []);
+
+  const startReview = useCallback((s) => {
+    setScope(s);
+    setView('review');
+  }, []);
+
+  const scopeLabel = useMemo(() => {
+    if (!scope) return '';
+    const book = tree.find((b) => b.id === scope.bookId);
+    if (!book) return '';
+    if (scope.unitId) {
+      const u = book.units.find((x) => x.id === scope.unitId);
+      return `${book.titleDe} · ${u?.titleDe || ''}`;
+    }
+    return book.titleDe;
+  }, [scope, tree]);
+
+  const addUnits = useMemo(() => {
+    const book = tree.find((b) => b.id === addBookId);
+    return book ? book.units : [];
+  }, [addBookId, tree]);
+
+  const saveWord = useCallback(async (entry) => {
+    await addCustomVocab(entry);
+    setCustomVocab((v) => [...v, entry]);
+    setView('picker');
+  }, []);
+
+  if (progressMap === null) {
+    return <div style={{ fontFamily: 'Inter, sans-serif', color: C.inkSoft, padding: '3rem', textAlign: 'center' }}>Lade …</div>;
+  }
+
+  return (
+    <div style={{
+      fontFamily: 'Inter, sans-serif', backgroundColor: C.parchmentLight, minHeight: '100vh',
+      color: C.ink, padding: '1.5rem 1rem 3rem',
+    }}>
+      <div style={{ maxWidth: 560, margin: '0 auto' }}>
+        <header style={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          borderBottom: `1px solid ${C.hairline}`, paddingBottom: '0.85rem', marginBottom: '1.5rem',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+            <BookOpen size={20} color={C.gold} />
+            <span style={{ fontFamily: 'Fraunces, serif', fontSize: 20, fontWeight: 600 }}>فُصحى</span>
+            <span style={{ fontSize: 14, color: C.inkSoft }}>Wortschatz</span>
+          </div>
+          <button
+            onClick={() => setHarakat((h) => !h)}
+            style={{
+              fontFamily: 'inherit', fontSize: 12, fontWeight: 500,
+              background: harakat ? C.parchmentDeep : 'transparent',
+              border: `1px solid ${C.hairline}`, borderRadius: 20, padding: '4px 10px',
+              color: C.inkSoft, cursor: 'pointer',
+            }}
+          >
+            Harakat {harakat ? 'an' : 'aus'}
+          </button>
+        </header>
+
+        {view === 'picker' && (
+          <BookPicker
+            tree={tree}
+            progressMap={progressMap}
+            onStart={startReview}
+            onAddWord={(bookId) => { setAddBookId(bookId); setView('add'); }}
+          />
+        )}
+
+        {view === 'review' && scope && (
+          <ReviewSession
+            scope={scope}
+            scopeLabel={scopeLabel}
+            progressMap={progressMap}
+            customVocab={customVocab}
+            harakat={harakat}
+            onProgressChange={handleProgressChange}
+            onExit={() => setView('picker')}
+          />
+        )}
+
+        {view === 'add' && (
+          <AddWord
+            bookId={addBookId}
+            units={addUnits}
+            onSave={saveWord}
+            onCancel={() => setView('picker')}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
