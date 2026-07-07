@@ -1,11 +1,14 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { BookOpen } from 'lucide-react';
 import { buildBookTree } from './data/books.js';
-import { loadProgress, loadCustomVocab, addCustomVocab, exportAll, importAll } from './db/db.js';
+import { loadProgress, loadCustomVocab, addCustomVocab, exportAll, importAll, getSetting, setSetting } from './db/db.js';
+import { DEFAULT_RETENTION, setRetention as configureRetention } from './srs/scheduler.js';
+import { DEFAULT_NEW_PER_SESSION } from './hooks/useReview.js';
 import BookPicker from './components/BookPicker.jsx';
 import ReviewSession from './components/ReviewSession.jsx';
 import AddWord from './components/AddWord.jsx';
 import BackupControls from './components/BackupControls.jsx';
+import Settings from './components/Settings.jsx';
 import { C } from './theme.js';
 
 // Top-level state machine: 'picker' | 'review' | 'add'. Loads progress and
@@ -17,12 +20,22 @@ export default function App() {
   const [view, setView] = useState('picker');
   const [scope, setScope] = useState(null);
   const [addBookId, setAddBookId] = useState(null);
+  const [retention, setRetentionState] = useState(DEFAULT_RETENTION);
+  const [newPerSession, setNewPerSession] = useState(DEFAULT_NEW_PER_SESSION);
 
   useEffect(() => {
     (async () => {
-      const [p, c] = await Promise.all([loadProgress(), loadCustomVocab()]);
+      const [p, c, r, n] = await Promise.all([
+        loadProgress(),
+        loadCustomVocab(),
+        getSetting('retention', DEFAULT_RETENTION),
+        getSetting('newPerSession', DEFAULT_NEW_PER_SESSION),
+      ]);
       setProgressMap(p);
       setCustomVocab(c);
+      setRetentionState(r);
+      setNewPerSession(n);
+      configureRetention(r);
     })();
   }, []);
 
@@ -81,6 +94,17 @@ export default function App() {
     return counts;
   }, []);
 
+  const handleRetentionChange = useCallback((r) => {
+    setRetentionState(r);
+    configureRetention(r);
+    setSetting('retention', r);
+  }, []);
+
+  const handleNewPerSessionChange = useCallback((n) => {
+    setNewPerSession(n);
+    setSetting('newPerSession', n);
+  }, []);
+
   if (progressMap === null) {
     return <div style={{ fontFamily: 'Inter, sans-serif', color: C.inkSoft, padding: '3rem', textAlign: 'center' }}>Lade …</div>;
   }
@@ -121,6 +145,12 @@ export default function App() {
               onStart={startReview}
               onAddWord={(bookId) => { setAddBookId(bookId); setView('add'); }}
             />
+            <Settings
+              retention={retention}
+              newPerSession={newPerSession}
+              onRetentionChange={handleRetentionChange}
+              onNewPerSessionChange={handleNewPerSessionChange}
+            />
             <BackupControls onExport={handleExport} onImport={handleImport} />
           </>
         )}
@@ -132,6 +162,7 @@ export default function App() {
             progressMap={progressMap}
             customVocab={customVocab}
             harakat={harakat}
+            newPerSession={newPerSession}
             onProgressChange={handleProgressChange}
             onExit={() => setView('picker')}
           />

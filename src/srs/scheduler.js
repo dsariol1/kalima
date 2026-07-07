@@ -4,15 +4,29 @@
 
 import { fsrs, generatorParameters, createEmptyCard, Rating, State } from 'ts-fsrs';
 
-// request_retention = target probability of recall at review time.
-// 0.90 is the FSRS default and a sensible starting point; expose it later
-// as a user setting. enable_fuzz spreads due dates so reviews don't clump.
-const params = generatorParameters({
-  request_retention: 0.9,
-  enable_fuzz: true,
-});
+// request_retention = target probability of recall at review time. 0.90 is
+// the FSRS default. User-configurable (see Settings); persisted via db.js
+// and applied here at app startup through setRetention().
+export const DEFAULT_RETENTION = 0.9;
 
-export const scheduler = fsrs(params);
+let retention = DEFAULT_RETENTION;
+let scheduler = buildScheduler(retention);
+
+// enable_fuzz spreads due dates so reviews don't clump.
+function buildScheduler(r) {
+  return fsrs(generatorParameters({ request_retention: r, enable_fuzz: true }));
+}
+
+// Rebuilds the internal ts-fsrs instance for a new target retention. Existing
+// cards are unaffected — this only changes how *future* reviews are scheduled.
+export function setRetention(r) {
+  retention = r;
+  scheduler = buildScheduler(r);
+}
+
+export function getRetention() {
+  return retention;
+}
 
 // Order matters: this is the left-to-right order of the grade buttons.
 export const RATINGS = [

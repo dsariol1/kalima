@@ -8,9 +8,9 @@ import { newCard, review } from '../srs/scheduler.js';
 import { cardId, isUnlocked } from '../srs/cards.js';
 import { saveProgress, logReview } from '../db/db.js';
 
-const NEW_PER_SESSION = 15; // cap on unseen cards introduced per session, per direction
+export const DEFAULT_NEW_PER_SESSION = 15; // cap on unseen cards introduced per session, per direction
 
-export function useReview({ scope, progressMap, customVocab, onProgressChange }) {
+export function useReview({ scope, progressMap, customVocab, onProgressChange, newPerSession = DEFAULT_NEW_PER_SESSION }) {
   const [queue, setQueue] = useState([]);
   const [revealed, setRevealed] = useState(false);
   const [stats, setStats] = useState({ reviewed: 0, again: 0 });
@@ -51,8 +51,8 @@ export function useReview({ scope, progressMap, customVocab, onProgressChange })
     }
     setQueue([
       ...due,
-      ...freshRecognition.slice(0, NEW_PER_SESSION),
-      ...freshProduction.slice(0, NEW_PER_SESSION),
+      ...freshRecognition.slice(0, newPerSession),
+      ...freshProduction.slice(0, newPerSession),
     ]);
     setStats({ reviewed: 0, again: 0 });
     setRevealed(false);

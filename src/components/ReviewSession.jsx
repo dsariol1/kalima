@@ -8,9 +8,9 @@ import { C } from '../theme.js';
 
 // A running review session for one scope. Owns nothing about scheduling —
 // that all lives in useReview / the scheduler wrapper.
-export default function ReviewSession({ scope, scopeLabel, progressMap, customVocab, harakat, onProgressChange, onExit }) {
+export default function ReviewSession({ scope, scopeLabel, progressMap, customVocab, harakat, newPerSession, onProgressChange, onExit }) {
   const { current, direction, currentCard, revealed, reveal, grade, stats, remaining, done } = useReview({
-    scope, progressMap, customVocab, onProgressChange,
+    scope, progressMap, customVocab, onProgressChange, newPerSession,
   });
 
   // Root-family siblings for the current card, within the whole app's vocab.
