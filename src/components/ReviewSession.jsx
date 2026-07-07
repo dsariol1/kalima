@@ -39,7 +39,7 @@ export default function ReviewSession({ scope, scopeLabel, progressMap, customVo
           <div style={{ fontSize: 12, color: C.inkSoft, textAlign: 'center', marginBottom: 10 }}>
             noch {remaining} · {stats.reviewed} wiederholt
           </div>
-          <Flashcard card={current} direction={direction} harakat={harakat} revealed={revealed} onReveal={reveal} family={family} />
+          <Flashcard key={`${current.id}:${direction}`} card={current} direction={direction} harakat={harakat} revealed={revealed} onReveal={reveal} family={family} />
           {revealed && <GradeButtons card={currentCard} onGrade={grade} />}
         </>
       ) : (
