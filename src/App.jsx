@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { BookOpen } from 'lucide-react';
 import { buildBookTree } from './data/books.js';
-import { loadProgress, loadCustomVocab, addCustomVocab } from './db/db.js';
+import { loadProgress, loadCustomVocab, addCustomVocab, exportAll, importAll } from './db/db.js';
 import BookPicker from './components/BookPicker.jsx';
 import ReviewSession from './components/ReviewSession.jsx';
 import AddWord from './components/AddWord.jsx';
+import BackupControls from './components/BackupControls.jsx';
 import { C } from './theme.js';
 
 // Top-level state machine: 'picker' | 'review' | 'add'. Loads progress and
@@ -59,6 +60,27 @@ export default function App() {
     setView('picker');
   }, []);
 
+  const handleExport = useCallback(async () => {
+    const data = await exportAll();
+    const stamp = new Date().toISOString().slice(0, 10);
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `fusha-vocab-backup-${stamp}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, []);
+
+  const handleImport = useCallback(async (file) => {
+    const payload = JSON.parse(await file.text());
+    const counts = await importAll(payload);
+    const [p, c] = await Promise.all([loadProgress(), loadCustomVocab()]);
+    setProgressMap(p);
+    setCustomVocab(c);
+    return counts;
+  }, []);
+
   if (progressMap === null) {
     return <div style={{ fontFamily: 'Inter, sans-serif', color: C.inkSoft, padding: '3rem', textAlign: 'center' }}>Lade …</div>;
   }
@@ -92,12 +114,15 @@ export default function App() {
         </header>
 
         {view === 'picker' && (
-          <BookPicker
-            tree={tree}
-            progressMap={progressMap}
-            onStart={startReview}
-            onAddWord={(bookId) => { setAddBookId(bookId); setView('add'); }}
-          />
+          <>
+            <BookPicker
+              tree={tree}
+              progressMap={progressMap}
+              onStart={startReview}
+              onAddWord={(bookId) => { setAddBookId(bookId); setView('add'); }}
+            />
+            <BackupControls onExport={handleExport} onImport={handleImport} />
+          </>
         )}
 
         {view === 'review' && scope && (

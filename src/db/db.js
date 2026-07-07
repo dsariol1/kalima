@@ -89,3 +89,55 @@ export async function getSetting(key, fallback) {
 export async function setSetting(key, value) {
   await db.settings.put({ key, value });
 }
+
+// --- backup (export / import) ---
+// JSON round-trips Date objects as ISO strings, so revive the date-typed
+// fields on the way back in — the FSRS scheduler needs real Date objects.
+function reviveDates(rows, keys) {
+  for (const r of rows) {
+    for (const k of keys) if (r[k]) r[k] = new Date(r[k]);
+  }
+  return rows;
+}
+
+// The full local state: learner words, per-card FSRS progress, review log,
+// and settings. Returned raw; the caller serialises + downloads it.
+export async function exportAll() {
+  const [progress, customVocab, reviews, settings] = await Promise.all([
+    db.progress.toArray(),
+    db.customVocab.toArray(),
+    db.reviews.toArray(),
+    db.settings.toArray(),
+  ]);
+  return { progress, customVocab, reviews, settings };
+}
+
+// Non-destructive restore: bulkPut upserts by primary key, so importing never
+// deletes what's already there — it merges the backup in (re-importing the same
+// file is idempotent). Returns how many rows were written per table.
+export async function importAll(payload) {
+  if (!payload || typeof payload !== 'object') {
+    throw new Error('Ungültige Sicherungsdatei.');
+  }
+  const progress = reviveDates(payload.progress || [], ['due', 'last_review']);
+  const customVocab = payload.customVocab || [];
+  const reviews = reviveDates(payload.reviews || [], ['reviewedAt']);
+  const settings = payload.settings || [];
+  if (![progress, customVocab, reviews, settings].some((a) => a.length)) {
+    throw new Error('Sicherungsdatei enthält keine bekannten Daten.');
+  }
+
+  await db.transaction('rw', db.progress, db.customVocab, db.reviews, db.settings, async () => {
+    if (customVocab.length) await db.customVocab.bulkPut(customVocab);
+    if (progress.length) await db.progress.bulkPut(progress);
+    if (reviews.length) await db.reviews.bulkPut(reviews);
+    if (settings.length) await db.settings.bulkPut(settings);
+  });
+
+  return {
+    progress: progress.length,
+    customVocab: customVocab.length,
+    reviews: reviews.length,
+    settings: settings.length,
+  };
+}
