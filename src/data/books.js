@@ -5,6 +5,7 @@
 
 import { quranCore } from './vocab/quranCore.js';
 import { abyBook1 } from './vocab/abyBook1.js';
+import { quran80 } from './vocab/quran80.js';
 
 export const BOOK_META = [
   {
@@ -25,16 +26,26 @@ export const BOOK_META = [
     level: 'A2',
     accent: '#9C7A3C',
   },
+  {
+    id: 'quran-80',
+    title: '٨٠٪ من كلمات القرآن',
+    subtitle: 'قوائم مصنّفة',
+    titleDe: '80 % der Quran-Wörter',
+    descDe: 'Die häufigsten Wörter des Quran, nach Wortart geordnet.',
+    level: 'A2',
+    accent: '#4A6E7A',
+  },
 ];
 
 // All built-in vocabulary in one flat array.
-export const BUILTIN_VOCAB = [...abyBook1, ...quranCore];
+export const BUILTIN_VOCAB = [...abyBook1, ...quranCore, ...quran80];
 
-// Grammatical categories that belong at the very end of a book, unnumbered —
-// they're cross-cutting reference lists, not sequential thematic lessons.
-// Match order here also fixes their order at the end: pronouns, adverbs,
-// prepositions. Custom chapters the learner names this way are detected too.
-const TRAILING_UNIT_KEYWORDS = ['pronomen', 'adverb', 'präposition', 'praeposition', 'preposition'];
+// Chapters whose name is exactly one of these belong at the very end of a
+// book, unnumbered — cross-cutting grammar reference lists, not sequential
+// thematic lessons. Matched on the whole (cleaned) name, not as a substring,
+// so thematic chapters like "Demonstrativpronomen" or "Präpositionen (Ort)"
+// stay numbered — only a chapter literally named "Pronomen" etc. trails.
+const TRAILING_UNITS = ['pronomen', 'adverbien', 'adverb', 'präpositionen', 'präposition', 'praepositionen', 'praeposition'];
 
 const ARABIC_DIGITS = '٠١٢٣٤٥٦٧٨٩';
 const toArabicNumeral = (n) => String(n).replace(/\d/g, (d) => ARABIC_DIGITS[+d]);
@@ -43,8 +54,14 @@ const toArabicNumeral = (n) => String(n).replace(/\d/g, (d) => ARABIC_DIGITS[+d]
 // digits) so numbering is idempotent no matter what's stored in a unitDe.
 const baseUnitName = (titleDe) => titleDe.replace(/^[\s\d٠-٩]+[.·-]\s*/, '').trim();
 
-const trailingRank = (name) => TRAILING_UNIT_KEYWORDS.findIndex((k) => name.toLowerCase().includes(k));
-const isTrailingUnit = (name) => trailingRank(name) !== -1;
+const isTrailingUnit = (name) => TRAILING_UNITS.includes(name.trim().toLowerCase());
+// Fixed order among the trailing chapters: pronouns, adverbs, prepositions.
+const trailingRank = (name) => {
+  const n = name.trim().toLowerCase();
+  if (n.startsWith('pron')) return 0;
+  if (n.startsWith('adverb')) return 1;
+  return 2;
+};
 
 // Numbered thematic chapters first (١، ٢، ٣ …), then the grammatical
 // categories at the end without numbers.
