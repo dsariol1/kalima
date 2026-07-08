@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { ArrowLeft, Sparkles } from 'lucide-react';
 import { useReview } from '../hooks/useReview.js';
 import { vocabForScope } from '../data/books.js';
@@ -12,6 +12,9 @@ export default function ReviewSession({ scope, scopeLabel, progressMap, customVo
   const { current, direction, currentCard, revealed, reveal, grade, stats, remaining, done } = useReview({
     scope, progressMap, customVocab, onProgressChange, newPerSession,
   });
+  // Lives here (not in Flashcard, which remounts per card) so it stays open
+  // across production cards within a session instead of resetting each time.
+  const [showKeyboard, setShowKeyboard] = useState(false);
 
   // Root-family siblings for the current card, within the whole app's vocab.
   const scopeVocab = useMemo(() => vocabForScope({ bookId: scope.bookId }, customVocab), [scope.bookId, customVocab]);
@@ -39,7 +42,11 @@ export default function ReviewSession({ scope, scopeLabel, progressMap, customVo
           <div style={{ fontSize: 12, color: C.inkSoft, textAlign: 'center', marginBottom: 10 }}>
             noch {remaining} · {stats.reviewed} wiederholt
           </div>
-          <Flashcard key={`${current.id}:${direction}`} card={current} direction={direction} harakat={harakat} revealed={revealed} onReveal={reveal} family={family} />
+          <Flashcard
+            key={`${current.id}:${direction}`}
+            card={current} direction={direction} harakat={harakat} revealed={revealed} onReveal={reveal} family={family}
+            showKeyboard={showKeyboard} onToggleKeyboard={() => setShowKeyboard((s) => !s)}
+          />
           {revealed && <GradeButtons card={currentCard} onGrade={grade} />}
         </>
       ) : (

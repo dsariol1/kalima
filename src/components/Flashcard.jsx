@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { Keyboard } from 'lucide-react';
 import { checkAnswer } from '../utils/answerCheck.js';
+import ArabicKeyboard from './ArabicKeyboard.jsx';
 import { C } from '../theme.js';
 
 const BADGE = {
@@ -71,9 +73,40 @@ const primaryBtn = {
 // then self-grade. `onReveal` flips the parent into its grade-buttons state;
 // the typed verdict is a hint, the grade stays the learner's call (FSRS is
 // self-graded throughout the app).
-function ProductionCard({ card, harakat, revealed, onReveal, family }) {
+function ProductionCard({ card, harakat, revealed, onReveal, family, showKeyboard, onToggleKeyboard }) {
   const [input, setInput] = useState('');
   const [correct, setCorrect] = useState(false);
+  const inputRef = useRef(null);
+
+  // Splices a char in at the current cursor position (not just appended),
+  // then restores focus + cursor so repeated on-screen key taps feel like
+  // typing rather than resetting to the end each time.
+  const spliceAtCursor = (before, after) => {
+    const el = inputRef.current;
+    const start = el?.selectionStart ?? input.length;
+    const end = el?.selectionEnd ?? input.length;
+    const next = before(input, start, end);
+    setInput(next);
+    requestAnimationFrame(() => {
+      if (!el) return;
+      el.focus();
+      el.setSelectionRange(after(start), after(start));
+    });
+  };
+
+  const insertAtCursor = (ch) => {
+    spliceAtCursor(
+      (val, start, end) => val.slice(0, start) + ch + val.slice(end),
+      (start) => start + ch.length,
+    );
+  };
+
+  const backspaceAtCursor = () => {
+    spliceAtCursor(
+      (val, start, end) => (start === end ? val.slice(0, Math.max(0, start - 1)) + val.slice(end) : val.slice(0, start) + val.slice(end)),
+      (start, end) => (start === end ? Math.max(0, start - 1) : start),
+    );
+  };
 
   const submit = () => {
     setCorrect(checkAnswer(input, card));
@@ -85,6 +118,7 @@ function ProductionCard({ card, harakat, revealed, onReveal, family }) {
       <>
         <div style={{ fontFamily: 'Fraunces, serif', fontSize: 24, marginBottom: 16 }}>{card.de}</div>
         <input
+          ref={inputRef}
           autoFocus
           dir="rtl"
           value={input}
@@ -95,9 +129,21 @@ function ProductionCard({ card, harakat, revealed, onReveal, family }) {
             width: '100%', boxSizing: 'border-box', textAlign: 'center',
             fontFamily: 'Amiri, serif', fontSize: 22,
             border: `1px solid ${C.hairline}`, borderRadius: 8,
-            padding: '10px 12px', marginBottom: 12, background: C.parchmentLight, color: C.ink,
+            padding: '10px 12px', marginBottom: 10, background: C.parchmentLight, color: C.ink,
           }}
         />
+        <button
+          type="button"
+          onClick={onToggleKeyboard}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 12,
+            background: 'none', border: 'none', color: C.gold, cursor: 'pointer',
+            fontFamily: 'inherit', fontSize: 12.5, fontWeight: 500, padding: 0,
+          }}
+        >
+          <Keyboard size={14} /> {showKeyboard ? 'Tastatur ausblenden' : 'Arabische Tastatur einblenden'}
+        </button>
+        {showKeyboard && <ArabicKeyboard onKey={insertAtCursor} onBackspace={backspaceAtCursor} />}
         <button onClick={submit} style={primaryBtn}>Antwort prüfen</button>
       </>
     );
@@ -141,7 +187,7 @@ function RecognitionCard({ card, harakat, revealed, onReveal, family }) {
 }
 
 // One vocabulary card, direction-aware. See the two card components above.
-export default function Flashcard({ card, direction, harakat, revealed, onReveal, family }) {
+export default function Flashcard({ card, direction, harakat, revealed, onReveal, family, showKeyboard, onToggleKeyboard }) {
   const badge = BADGE[direction];
   const Card = direction === 'production' ? ProductionCard : RecognitionCard;
 
@@ -164,7 +210,10 @@ export default function Flashcard({ card, direction, harakat, revealed, onReveal
           {badge.label}
         </div>
       )}
-      <Card card={card} harakat={harakat} revealed={revealed} onReveal={onReveal} family={family} />
+      <Card
+        card={card} harakat={harakat} revealed={revealed} onReveal={onReveal} family={family}
+        showKeyboard={showKeyboard} onToggleKeyboard={onToggleKeyboard}
+      />
     </div>
   );
 }
