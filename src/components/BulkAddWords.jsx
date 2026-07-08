@@ -51,8 +51,8 @@ export default function BulkAddWords({ bookId, units, onSave, onCancel }) {
       <div style={{ border: `1px solid ${C.hairline}`, borderRadius: 14, backgroundColor: C.parchment, padding: '1.25rem' }}>
         <div style={{ fontFamily: 'Fraunces, serif', fontSize: 18, marginBottom: 4 }}>Vokabelliste einfügen</div>
         <div style={{ fontSize: 12.5, color: C.inkSoft, marginBottom: 14 }}>
-          Ein Wort pro Zeile: <code>Arabisch | Deutsch | Umschrift? | Wurzel? | Wurzelbedeutung?</code> —
-          nur Arabisch und Deutsch sind Pflicht.
+          Ein Wort pro Zeile: <code>Arabisch / Deutsch / Umschrift? / Wurzel? / Wurzelbedeutung?</code> —
+          nur Arabisch und Deutsch sind Pflicht. Die Felder selbst dürfen kein „/" enthalten.
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -81,7 +81,7 @@ export default function BulkAddWords({ bookId, units, onSave, onCancel }) {
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
-              placeholder={'بَيْت | Haus\nكِتَاب | Buch | kitāb\nمَدْرَسَة | Schule | madrasa | م د ر س | Schule/Unterricht'}
+              placeholder={'بَيْت / Haus\nكِتَاب / Buch / kitāb\nمَدْرَسَة / Schule / madrasa / م د ر س / Lernen'}
               rows={10}
               style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6 }}
             />
