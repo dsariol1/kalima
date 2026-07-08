@@ -141,7 +141,7 @@ function ProductionCard({ card, harakat, revealed, onReveal, family, showKeyboar
             fontFamily: 'inherit', fontSize: 12.5, fontWeight: 500, padding: 0,
           }}
         >
-          <Keyboard size={14} /> {showKeyboard ? 'Tastatur ausblenden' : 'Arabische Tastatur einblenden'}
+          <Keyboard size={14} /> {showKeyboard ? 'Tastatur ausblenden' : 'Tastatur einblenden'}
         </button>
         {showKeyboard && <ArabicKeyboard onKey={insertAtCursor} onBackspace={backspaceAtCursor} />}
         <button onClick={submit} style={primaryBtn}>Antwort prüfen</button>
