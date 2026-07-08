@@ -64,6 +64,10 @@ export async function addCustomVocab(entry) {
   await db.customVocab.put(entry);
 }
 
+export async function addCustomVocabMany(entries) {
+  await db.customVocab.bulkPut(entries);
+}
+
 export async function deleteCustomVocab(id) {
   await db.customVocab.delete(id);
   await db.progress.where('vocabId').equals(id).delete();

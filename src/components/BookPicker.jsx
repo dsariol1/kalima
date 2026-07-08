@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
-import { BookOpen, Plus, ChevronRight } from 'lucide-react';
+import { BookOpen, Plus, ChevronRight, ListPlus } from 'lucide-react';
 import { cardId, isUnlocked } from '../srs/cards.js';
 import { C } from '../theme.js';
 
 // Landing screen: pick a book, then a whole book or a single unit to review.
 // Each unit shows how many cards (recognition + production) are due and new.
-export default function BookPicker({ tree, progressMap, onStart, onAddWord }) {
+export default function BookPicker({ tree, progressMap, onStart, onAddWord, onBulkAddWords }) {
   const now = Date.now();
 
   const counts = useMemo(() => {
@@ -93,16 +93,28 @@ export default function BookPicker({ tree, progressMap, onStart, onAddWord }) {
               })}
             </div>
 
-            <button
-              onClick={() => onAddWord(book.id)}
-              style={{
-                marginTop: 10, display: 'inline-flex', alignItems: 'center', gap: 6,
-                background: 'none', border: 'none', color: C.gold, cursor: 'pointer',
-                fontFamily: 'inherit', fontSize: 12.5, fontWeight: 500, padding: 0,
-              }}
-            >
-              <Plus size={14} /> Eigenes Wort hinzufügen
-            </button>
+            <div style={{ marginTop: 10, display: 'flex', gap: 16 }}>
+              <button
+                onClick={() => onAddWord(book.id)}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  background: 'none', border: 'none', color: C.gold, cursor: 'pointer',
+                  fontFamily: 'inherit', fontSize: 12.5, fontWeight: 500, padding: 0,
+                }}
+              >
+                <Plus size={14} /> Eigenes Wort hinzufügen
+              </button>
+              <button
+                onClick={() => onBulkAddWords(book.id)}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  background: 'none', border: 'none', color: C.gold, cursor: 'pointer',
+                  fontFamily: 'inherit', fontSize: 12.5, fontWeight: 500, padding: 0,
+                }}
+              >
+                <ListPlus size={14} /> Vokabelliste einfügen
+              </button>
+            </div>
           </div>
         );
       })}

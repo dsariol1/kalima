@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { BookOpen } from 'lucide-react';
 import { buildBookTree } from './data/books.js';
-import { loadProgress, loadCustomVocab, addCustomVocab, exportAll, importAll, getSetting, setSetting } from './db/db.js';
+import { loadProgress, loadCustomVocab, addCustomVocab, addCustomVocabMany, exportAll, importAll, getSetting, setSetting } from './db/db.js';
 import { DEFAULT_RETENTION, setRetention as configureRetention } from './srs/scheduler.js';
 import { DEFAULT_NEW_PER_SESSION } from './hooks/useReview.js';
 import BookPicker from './components/BookPicker.jsx';
 import ReviewSession from './components/ReviewSession.jsx';
 import AddWord from './components/AddWord.jsx';
+import BulkAddWords from './components/BulkAddWords.jsx';
 import BackupControls from './components/BackupControls.jsx';
 import Settings from './components/Settings.jsx';
 import { C } from './theme.js';
@@ -70,6 +71,12 @@ export default function App() {
   const saveWord = useCallback(async (entry) => {
     await addCustomVocab(entry);
     setCustomVocab((v) => [...v, entry]);
+    setView('picker');
+  }, []);
+
+  const saveBulkWords = useCallback(async (entries) => {
+    await addCustomVocabMany(entries);
+    setCustomVocab((v) => [...v, ...entries]);
     setView('picker');
   }, []);
 
@@ -144,6 +151,7 @@ export default function App() {
               progressMap={progressMap}
               onStart={startReview}
               onAddWord={(bookId) => { setAddBookId(bookId); setView('add'); }}
+              onBulkAddWords={(bookId) => { setAddBookId(bookId); setView('bulkAdd'); }}
             />
             <Settings
               retention={retention}
@@ -173,6 +181,15 @@ export default function App() {
             bookId={addBookId}
             units={addUnits}
             onSave={saveWord}
+            onCancel={() => setView('picker')}
+          />
+        )}
+
+        {view === 'bulkAdd' && (
+          <BulkAddWords
+            bookId={addBookId}
+            units={addUnits}
+            onSave={saveBulkWords}
             onCancel={() => setView('picker')}
           />
         )}
