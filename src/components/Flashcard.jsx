@@ -114,9 +114,11 @@ function ProductionCard({ card, harakat, revealed, onReveal, family, showKeyboar
   };
 
   if (!revealed) {
+    // Column layout so each control sits on its own row: prompt, input,
+    // keyboard toggle, (keyboard), then the check button underneath.
     return (
-      <>
-        <div style={{ fontFamily: 'Fraunces, serif', fontSize: 24, marginBottom: 16 }}>{card.de}</div>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+        <div style={{ fontFamily: 'Fraunces, serif', fontSize: 24, marginBottom: 4 }}>{card.de}</div>
         <input
           ref={inputRef}
           autoFocus
@@ -129,23 +131,27 @@ function ProductionCard({ card, harakat, revealed, onReveal, family, showKeyboar
             width: '100%', boxSizing: 'border-box', textAlign: 'center',
             fontFamily: 'Amiri, serif', fontSize: 22,
             border: `1px solid ${C.hairline}`, borderRadius: 8,
-            padding: '10px 12px', marginBottom: 10, background: C.parchmentLight, color: C.ink,
+            padding: '10px 12px', background: C.parchmentLight, color: C.ink,
           }}
         />
         <button
           type="button"
           onClick={onToggleKeyboard}
           style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 12,
+            display: 'inline-flex', alignItems: 'center', gap: 6,
             background: 'none', border: 'none', color: C.gold, cursor: 'pointer',
             fontFamily: 'inherit', fontSize: 12.5, fontWeight: 500, padding: 0,
           }}
         >
           <Keyboard size={14} /> {showKeyboard ? 'Tastatur ausblenden' : 'Tastatur einblenden'}
         </button>
-        {showKeyboard && <ArabicKeyboard onKey={insertAtCursor} onBackspace={backspaceAtCursor} />}
+        {showKeyboard && (
+          <div style={{ width: '100%' }}>
+            <ArabicKeyboard onKey={insertAtCursor} onBackspace={backspaceAtCursor} />
+          </div>
+        )}
         <button onClick={submit} style={primaryBtn}>Antwort prüfen</button>
-      </>
+      </div>
     );
   }
 

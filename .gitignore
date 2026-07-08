@@ -6,3 +6,6 @@ dist-ssr
 .vscode/*
 !.vscode/extensions.json
 *.log
+
+# Deck backups exported from the app — learner data, not source.
+fusha-vocab-backup-*.json
