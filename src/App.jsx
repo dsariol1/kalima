@@ -4,7 +4,8 @@ import { buildBookTree } from './data/books.js';
 import { loadProgress, loadCustomVocab, addCustomVocab, addCustomVocabMany, exportAll, importAll, getSetting, setSetting } from './db/db.js';
 import { DEFAULT_RETENTION, setRetention as configureRetention } from './srs/scheduler.js';
 import { DEFAULT_NEW_PER_SESSION } from './hooks/useReview.js';
-import BookPicker from './components/BookPicker.jsx';
+import BookList from './components/BookList.jsx';
+import BookDetail from './components/BookDetail.jsx';
 import ReviewSession from './components/ReviewSession.jsx';
 import AddWord from './components/AddWord.jsx';
 import BulkAddWords from './components/BulkAddWords.jsx';
@@ -12,15 +13,16 @@ import BackupControls from './components/BackupControls.jsx';
 import Settings from './components/Settings.jsx';
 import { C } from './theme.js';
 
-// Top-level state machine: 'picker' | 'review' | 'add'. Loads progress and
-// custom vocab from IndexedDB once, then hands slices to each screen.
+// Top-level state machine: 'books' (landing) -> 'bookDetail' (one book's
+// chapters) -> 'review' | 'add' | 'bulkAdd'. Loads progress and custom vocab
+// from IndexedDB once, then hands slices to each screen.
 export default function App() {
   const [progressMap, setProgressMap] = useState(null);
   const [customVocab, setCustomVocab] = useState([]);
   const [harakat, setHarakat] = useState(true);
-  const [view, setView] = useState('picker');
+  const [view, setView] = useState('books');
   const [scope, setScope] = useState(null);
-  const [addBookId, setAddBookId] = useState(null);
+  const [selectedBookId, setSelectedBookId] = useState(null);
   const [retention, setRetentionState] = useState(DEFAULT_RETENTION);
   const [newPerSession, setNewPerSession] = useState(DEFAULT_NEW_PER_SESSION);
 
@@ -41,6 +43,11 @@ export default function App() {
   }, []);
 
   const tree = useMemo(() => buildBookTree(customVocab), [customVocab]);
+
+  const selectedBook = useMemo(
+    () => tree.find((b) => b.id === selectedBookId) || null,
+    [tree, selectedBookId]
+  );
 
   // `cardId` is the composite `${vocabId}::${direction}` key from useReview/db.
   const handleProgressChange = useCallback((cardId, card) => {
@@ -63,21 +70,16 @@ export default function App() {
     return book.titleDe;
   }, [scope, tree]);
 
-  const addUnits = useMemo(() => {
-    const book = tree.find((b) => b.id === addBookId);
-    return book ? book.units : [];
-  }, [addBookId, tree]);
-
   const saveWord = useCallback(async (entry) => {
     await addCustomVocab(entry);
     setCustomVocab((v) => [...v, entry]);
-    setView('picker');
+    setView('bookDetail');
   }, []);
 
   const saveBulkWords = useCallback(async (entries) => {
     await addCustomVocabMany(entries);
     setCustomVocab((v) => [...v, ...entries]);
-    setView('picker');
+    setView('bookDetail');
   }, []);
 
   const handleExport = useCallback(async () => {
@@ -144,14 +146,12 @@ export default function App() {
           </button>
         </header>
 
-        {view === 'picker' && (
+        {view === 'books' && (
           <>
-            <BookPicker
+            <BookList
               tree={tree}
               progressMap={progressMap}
-              onStart={startReview}
-              onAddWord={(bookId) => { setAddBookId(bookId); setView('add'); }}
-              onBulkAddWords={(bookId) => { setAddBookId(bookId); setView('bulkAdd'); }}
+              onSelectBook={(bookId) => { setSelectedBookId(bookId); setView('bookDetail'); }}
             />
             <Settings
               retention={retention}
@@ -163,6 +163,17 @@ export default function App() {
           </>
         )}
 
+        {view === 'bookDetail' && selectedBook && (
+          <BookDetail
+            book={selectedBook}
+            progressMap={progressMap}
+            onStart={startReview}
+            onAddWord={() => setView('add')}
+            onBulkAddWords={() => setView('bulkAdd')}
+            onBack={() => setView('books')}
+          />
+        )}
+
         {view === 'review' && scope && (
           <ReviewSession
             scope={scope}
@@ -172,25 +183,25 @@ export default function App() {
             harakat={harakat}
             newPerSession={newPerSession}
             onProgressChange={handleProgressChange}
-            onExit={() => setView('picker')}
+            onExit={() => setView('bookDetail')}
           />
         )}
 
         {view === 'add' && (
           <AddWord
-            bookId={addBookId}
-            units={addUnits}
+            bookId={selectedBookId}
+            units={selectedBook ? selectedBook.units : []}
             onSave={saveWord}
-            onCancel={() => setView('picker')}
+            onCancel={() => setView('bookDetail')}
           />
         )}
 
         {view === 'bulkAdd' && (
           <BulkAddWords
-            bookId={addBookId}
-            units={addUnits}
+            bookId={selectedBookId}
+            units={selectedBook ? selectedBook.units : []}
             onSave={saveBulkWords}
-            onCancel={() => setView('picker')}
+            onCancel={() => setView('bookDetail')}
           />
         )}
       </div>
