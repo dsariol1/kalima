@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { BookOpen } from 'lucide-react';
 import { buildBookTree } from './data/books.js';
 import { loadProgress, loadCustomVocab, addCustomVocab, addCustomVocabMany, exportAll, importAll, getSetting, setSetting } from './db/db.js';
 import { DEFAULT_RETENTION, setRetention as configureRetention } from './srs/scheduler.js';
@@ -128,22 +127,33 @@ export default function App() {
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           borderBottom: `1px solid ${C.hairline}`, paddingBottom: '0.85rem', marginBottom: '1.5rem',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-            <BookOpen size={20} color={C.gold} />
-            <span style={{ fontFamily: 'Fraunces, serif', fontSize: 20, fontWeight: 600 }}>فُصحى</span>
-            <span style={{ fontSize: 14, color: C.inkSoft }}>Wortschatz</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {/* Logo lives in public/kalima-logo.png; hides itself gracefully
+                if the file isn't there yet, leaving just the wordmark. */}
+            <img
+              src="/kalima-logo.png"
+              alt=""
+              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              style={{ height: 32, width: 'auto', display: 'block' }}
+            />
+            <span style={{ fontFamily: 'Fraunces, serif', fontSize: 22, fontWeight: 600 }}>
+              Kalima<span style={{ color: C.gold }}>+</span>
+            </span>
           </div>
-          <button
-            onClick={() => setHarakat((h) => !h)}
-            style={{
-              fontFamily: 'inherit', fontSize: 12, fontWeight: 500,
-              background: harakat ? C.parchmentDeep : 'transparent',
-              border: `1px solid ${C.hairline}`, borderRadius: 20, padding: '4px 10px',
-              color: C.inkSoft, cursor: 'pointer',
-            }}
-          >
-            Harakat {harakat ? 'an' : 'aus'}
-          </button>
+          {/* Harakat toggle only matters while a word is being quizzed. */}
+          {view === 'review' && (
+            <button
+              onClick={() => setHarakat((h) => !h)}
+              style={{
+                fontFamily: 'inherit', fontSize: 12, fontWeight: 500,
+                background: harakat ? C.parchmentDeep : 'transparent',
+                border: `1px solid ${C.hairline}`, borderRadius: 20, padding: '4px 10px',
+                color: C.inkSoft, cursor: 'pointer',
+              }}
+            >
+              Harakat {harakat ? 'an' : 'aus'}
+            </button>
+          )}
         </header>
 
         {view === 'books' && (
