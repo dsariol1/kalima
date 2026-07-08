@@ -14,12 +14,9 @@ const VERDICT = {
 
 function ArabicWord({ card, harakat }) {
   return (
-    <>
-      <div dir="rtl" style={{ fontFamily: 'Amiri, serif', fontSize: 46, lineHeight: 1.3, marginBottom: 6 }}>
-        {harakat ? card.ar : card.bare}
-      </div>
-      <div style={{ fontSize: 14, color: C.inkSoft, fontStyle: 'italic' }}>{card.translit}</div>
-    </>
+    <div dir="rtl" style={{ fontFamily: 'Amiri, serif', fontSize: 46, lineHeight: 1.3 }}>
+      {harakat ? card.ar : card.bare}
+    </div>
   );
 }
 
@@ -70,16 +67,16 @@ const primaryBtn = {
   borderRadius: 8, padding: '9px 22px', cursor: 'pointer',
 };
 
-// The German -> Arabic prompt: type the word (transliteration or Arabic
-// script), check it, then self-grade. `onReveal` flips the parent into its
-// grade-buttons state; the typed verdict is a hint, the grade stays the
-// learner's call (FSRS is self-graded throughout the app).
+// The German -> Arabic prompt: type the word in Arabic script, check it,
+// then self-grade. `onReveal` flips the parent into its grade-buttons state;
+// the typed verdict is a hint, the grade stays the learner's call (FSRS is
+// self-graded throughout the app).
 function ProductionCard({ card, harakat, revealed, onReveal, family }) {
   const [input, setInput] = useState('');
-  const [result, setResult] = useState(null);
+  const [correct, setCorrect] = useState(false);
 
   const submit = () => {
-    setResult(checkAnswer(input, card));
+    setCorrect(checkAnswer(input, card));
     onReveal();
   };
 
@@ -89,14 +86,14 @@ function ProductionCard({ card, harakat, revealed, onReveal, family }) {
         <div style={{ fontFamily: 'Fraunces, serif', fontSize: 24, marginBottom: 16 }}>{card.de}</div>
         <input
           autoFocus
-          dir="auto"
+          dir="rtl"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}
-          placeholder="Wort tippen — arabisch oder Umschrift"
+          placeholder="مَثَلًا: بَيْت"
           style={{
             width: '100%', boxSizing: 'border-box', textAlign: 'center',
-            fontFamily: 'Amiri, Inter, serif', fontSize: 20,
+            fontFamily: 'Amiri, serif', fontSize: 22,
             border: `1px solid ${C.hairline}`, borderRadius: 8,
             padding: '10px 12px', marginBottom: 12, background: C.parchmentLight, color: C.ink,
           }}
@@ -106,14 +103,14 @@ function ProductionCard({ card, harakat, revealed, onReveal, family }) {
     );
   }
 
-  const verdict = input.trim() ? (result?.correct ? VERDICT.correct : VERDICT.wrong) : null;
+  const verdict = input.trim() ? (correct ? VERDICT.correct : VERDICT.wrong) : null;
   return (
     <>
       <div style={{ fontFamily: 'Fraunces, serif', fontSize: 21, marginBottom: 12 }}>{card.de}</div>
       {verdict && (
         <div style={{ fontSize: 14, fontWeight: 600, color: verdict.color, marginBottom: 12 }}>
           {verdict.label}
-          {!result?.correct && <span style={{ fontWeight: 400, color: C.inkSoft }}> · „{input.trim()}"</span>}
+          {!correct && <span style={{ fontWeight: 400, color: C.inkSoft }}> · „{input.trim()}"</span>}
         </div>
       )}
       <ArabicWord card={card} harakat={harakat} />

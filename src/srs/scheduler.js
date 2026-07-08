@@ -28,12 +28,11 @@ export function getRetention() {
   return retention;
 }
 
-// Order matters: this is the left-to-right order of the grade buttons.
+// Simplified to a binary pass/fail — Hard/Easy are unused. Order matters:
+// this is the left-to-right order of the grade buttons.
 export const RATINGS = [
   { grade: Rating.Again, key: 'again', label: 'Nochmal' },
-  { grade: Rating.Hard, key: 'hard', label: 'Schwer' },
-  { grade: Rating.Good, key: 'good', label: 'Gut' },
-  { grade: Rating.Easy, key: 'easy', label: 'Leicht' },
+  { grade: Rating.Good, key: 'good', label: 'Weiß ich' },
 ];
 
 // A fresh FSRS card for a word that's never been seen.
@@ -47,7 +46,7 @@ export function review(card, grade, now = new Date()) {
 }
 
 // For each rating, what would the next due date be? Used to label the
-// four buttons with their resulting intervals without committing anything.
+// two buttons with their resulting intervals without committing anything.
 export function previewDueDates(card, now = new Date()) {
   const out = {};
   for (const r of RATINGS) {
