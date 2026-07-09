@@ -17,8 +17,8 @@ const LETTERS = [
 export default function ArabicKeyboard({ onKey, onBackspace }) {
   const keyStyle = {
     fontFamily: 'Amiri, serif', fontSize: 18, padding: '8px 0',
-    border: `1px solid ${C.hairline}`, borderRadius: 6,
-    backgroundColor: C.parchmentLight, color: C.ink, cursor: 'pointer',
+    border: `1px solid ${C.border}`, borderRadius: 8,
+    backgroundColor: C.surface, color: C.text, cursor: 'pointer',
   };
 
   return (
@@ -35,7 +35,7 @@ export default function ArabicKeyboard({ onKey, onBackspace }) {
         style={{
           ...keyStyle, gridColumn: 'span 2',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          backgroundColor: C.parchmentDeep,
+          backgroundColor: C.surfaceMuted,
         }}
       >
         <Delete size={16} />

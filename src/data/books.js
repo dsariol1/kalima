@@ -15,7 +15,7 @@ export const BOOK_META = [
     titleDe: 'Al-ʿArabiyya bayna Yadayk — Band 1',
     descDe: 'Grundwortschatz für Anfänger, nach Themen geordnet.',
     level: 'A1',
-    accent: '#3E6259',
+    accent: '#0F766E',
   },
   {
     id: 'quran-core',
@@ -24,7 +24,7 @@ export const BOOK_META = [
     titleDe: 'Quran-Kernwortschatz',
     descDe: 'Häufige Wurzeln des Quran, in Wurzelfamilien gruppiert.',
     level: 'A2',
-    accent: '#9C7A3C',
+    accent: '#A16207',
   },
   {
     id: 'quran-80',
@@ -33,7 +33,7 @@ export const BOOK_META = [
     titleDe: '80 % der Quran-Wörter',
     descDe: 'Die häufigsten Wörter des Quran, nach Wortart geordnet.',
     level: 'A2',
-    accent: '#4A6E7A',
+    accent: '#3A6B8C',
   },
 ];
 

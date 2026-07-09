@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { parseVocabLines, slugUnit } from '../utils/parseVocabList.js';
-import { C } from '../theme.js';
+import { C, card, backBtn, primaryBtn, inputStyle, fieldLabel } from '../theme.js';
 
 const NEW_CHAPTER = '__new__';
 
@@ -31,26 +31,17 @@ export default function BulkAddWords({ bookId, units, onSave, onCancel }) {
 
   const canSave = targetUnit && parsed.entries.length > 0;
 
-  const inputStyle = {
-    width: '100%', boxSizing: 'border-box', padding: '9px 11px',
-    border: `1px solid ${C.hairline}`, borderRadius: 8, backgroundColor: C.parchmentLight,
-    fontFamily: 'inherit', fontSize: 14, color: C.ink, marginTop: 4,
-  };
-  const label = { fontSize: 12.5, color: C.inkSoft, fontWeight: 500 };
+  const label = fieldLabel;
 
   return (
     <div>
-      <button
-        onClick={onCancel}
-        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'none', border: 'none',
-          color: C.inkSoft, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, padding: 0, marginBottom: 14 }}
-      >
+      <button onClick={onCancel} style={{ ...backBtn, marginBottom: 14 }}>
         <ArrowLeft size={15} /> Zurück
       </button>
 
-      <div style={{ border: `1px solid ${C.hairline}`, borderRadius: 14, backgroundColor: C.parchment, padding: '1.25rem' }}>
+      <div style={{ ...card, padding: '1.25rem' }}>
         <div style={{ fontFamily: 'Fraunces, serif', fontSize: 18, marginBottom: 4 }}>Vokabelliste einfügen</div>
-        <div style={{ fontSize: 12.5, color: C.inkSoft, marginBottom: 14 }}>
+        <div style={{ fontSize: 12.5, color: C.textSoft, marginBottom: 14 }}>
           Ein Wort pro Zeile: <code>Arabisch / Deutsch / Umschrift? / Wurzel? / Wurzelbedeutung?</code> —
           nur Arabisch und Deutsch sind Pflicht. Die Felder selbst dürfen kein „/" enthalten.
         </div>
@@ -88,10 +79,10 @@ export default function BulkAddWords({ bookId, units, onSave, onCancel }) {
           </div>
 
           {text.trim() && (
-            <div style={{ fontSize: 12.5, color: C.inkSoft }}>
+            <div style={{ fontSize: 12.5, color: C.textSoft }}>
               {parsed.entries.length} Wort{parsed.entries.length === 1 ? '' : 'e'} erkannt
               {parsed.errors.length > 0 && (
-                <span style={{ color: C.rust }}>
+                <span style={{ color: C.danger }}>
                   {' '}· {parsed.errors.length} Zeile{parsed.errors.length === 1 ? '' : 'n'} übersprungen (Zeile{' '}
                   {parsed.errors.map((e) => e.line).join(', ')})
                 </span>
@@ -104,9 +95,10 @@ export default function BulkAddWords({ bookId, units, onSave, onCancel }) {
           onClick={() => canSave && onSave(parsed.entries)}
           disabled={!canSave}
           style={{
-            marginTop: 16, width: '100%', background: canSave ? C.teal : C.parchmentDeep,
-            color: canSave ? '#F8F2E3' : C.inkSoft, border: 'none', borderRadius: 8,
-            padding: '10px', cursor: canSave ? 'pointer' : 'default', fontFamily: 'inherit', fontSize: 14, fontWeight: 500,
+            ...primaryBtn, marginTop: 16, width: '100%', padding: '10px', fontSize: 14,
+            background: canSave ? C.primary : C.surfaceMuted,
+            color: canSave ? '#FFFFFF' : C.textSoft,
+            cursor: canSave ? 'pointer' : 'default',
           }}
         >
           {parsed.entries.length > 0 ? `${parsed.entries.length} Wörter hinzufügen` : 'Wörter hinzufügen'}

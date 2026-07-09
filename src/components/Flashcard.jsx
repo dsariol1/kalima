@@ -2,16 +2,16 @@ import { useRef, useState } from 'react';
 import { Keyboard } from 'lucide-react';
 import { checkAnswer } from '../utils/answerCheck.js';
 import ArabicKeyboard from './ArabicKeyboard.jsx';
-import { C } from '../theme.js';
+import { C, card as cardStyle, primaryBtn, linkBtn, inputStyle, pill } from '../theme.js';
 
 const BADGE = {
-  recognition: { label: 'Erkennen', color: C.teal },
+  recognition: { label: 'Erkennen', color: C.primary },
   production: { label: 'Produzieren', color: C.gold },
 };
 
 const VERDICT = {
-  correct: { color: '#3E6259', label: '✓ Richtig' },
-  wrong: { color: '#9C4A3C', label: '✗ Nicht ganz' },
+  correct: { color: C.success, label: '✓ Richtig' },
+  wrong: { color: C.danger, label: '✗ Nicht ganz' },
 };
 
 function ArabicWord({ card, harakat }) {
@@ -25,11 +25,11 @@ function ArabicWord({ card, harakat }) {
 function RootFamily({ card, family }) {
   if (!card.root) return null;
   return (
-    <div style={{ borderTop: `1px solid ${C.hairline}`, paddingTop: 12 }}>
+    <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 12 }}>
       <div dir="rtl" style={{ fontFamily: 'Amiri, serif', fontSize: 22, letterSpacing: 3, marginBottom: 2 }}>
         {card.root.join(' ')}
       </div>
-      <div style={{ fontSize: 12.5, color: C.inkSoft, marginBottom: family.length ? 10 : 0 }}>
+      <div style={{ fontSize: 12.5, color: C.textSoft, marginBottom: family.length ? 10 : 0 }}>
         Wurzel · {card.rootMeaning}
       </div>
       {family.length > 0 && (
@@ -38,13 +38,13 @@ function RootFamily({ card, family }) {
             <span
               key={f.id}
               style={{
-                border: `1px solid ${C.hairline}`, borderRadius: 20, padding: '4px 12px',
-                backgroundColor: C.parchmentLight, fontSize: 12.5,
+                border: `1px solid ${C.border}`, borderRadius: 999, padding: '4px 12px',
+                backgroundColor: C.bg, fontSize: 12.5,
                 display: 'inline-flex', gap: 6, alignItems: 'center',
               }}
             >
               <span dir="rtl" style={{ fontFamily: 'Amiri, serif', fontSize: 15 }}>{f.ar}</span>
-              <span style={{ color: C.inkSoft }}>— {f.de}</span>
+              <span style={{ color: C.textSoft }}>— {f.de}</span>
             </span>
           ))}
         </div>
@@ -56,18 +56,12 @@ function RootFamily({ card, family }) {
 function Example({ card }) {
   if (!card.example) return null;
   return (
-    <div style={{ borderTop: `1px solid ${C.hairline}`, marginTop: 14, paddingTop: 12 }}>
+    <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 14, paddingTop: 12 }}>
       <div dir="rtl" style={{ fontFamily: 'Amiri, serif', fontSize: 19, marginBottom: 4 }}>{card.example.ar}</div>
-      <div style={{ fontSize: 13, color: C.inkSoft, fontStyle: 'italic' }}>„{card.example.de}"</div>
+      <div style={{ fontSize: 13, color: C.textSoft, fontStyle: 'italic' }}>„{card.example.de}"</div>
     </div>
   );
 }
-
-const primaryBtn = {
-  fontFamily: 'inherit', fontSize: 13.5, fontWeight: 500,
-  background: C.teal, color: '#F8F2E3', border: 'none',
-  borderRadius: 8, padding: '9px 22px', cursor: 'pointer',
-};
 
 // The German -> Arabic prompt: type the word in Arabic script, check it,
 // then self-grade. `onReveal` flips the parent into its grade-buttons state;
@@ -128,21 +122,11 @@ function ProductionCard({ card, harakat, revealed, onReveal, family, showKeyboar
           onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}
           placeholder="مَثَلًا: بَيْت"
           style={{
-            width: '100%', boxSizing: 'border-box', textAlign: 'center',
-            fontFamily: 'Amiri, serif', fontSize: 22,
-            border: `1px solid ${C.hairline}`, borderRadius: 8,
-            padding: '10px 12px', background: C.parchmentLight, color: C.ink,
+            ...inputStyle, textAlign: 'center', marginTop: 0,
+            fontFamily: 'Amiri, serif', fontSize: 22, padding: '10px 12px',
           }}
         />
-        <button
-          type="button"
-          onClick={onToggleKeyboard}
-          style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            background: 'none', border: 'none', color: C.gold, cursor: 'pointer',
-            fontFamily: 'inherit', fontSize: 12.5, fontWeight: 500, padding: 0,
-          }}
-        >
+        <button type="button" onClick={onToggleKeyboard} style={linkBtn}>
           <Keyboard size={14} /> {showKeyboard ? 'Tastatur ausblenden' : 'Tastatur einblenden'}
         </button>
         {showKeyboard && (
@@ -162,7 +146,7 @@ function ProductionCard({ card, harakat, revealed, onReveal, family, showKeyboar
       {verdict && (
         <div style={{ fontSize: 14, fontWeight: 600, color: verdict.color, marginBottom: 12 }}>
           {verdict.label}
-          {!correct && <span style={{ fontWeight: 400, color: C.inkSoft }}> · „{input.trim()}"</span>}
+          {!correct && <span style={{ fontWeight: 400, color: C.textSoft }}> · „{input.trim()}"</span>}
         </div>
       )}
       <ArabicWord card={card} harakat={harakat} />
@@ -200,19 +184,14 @@ export default function Flashcard({ card, direction, harakat, revealed, onReveal
   return (
     <div
       style={{
-        border: `1px solid ${C.hairline}`,
-        borderRadius: 14,
-        backgroundColor: C.parchment,
+        ...cardStyle,
         padding: '2rem 1.5rem',
         textAlign: 'center',
         marginBottom: '1.25rem',
       }}
     >
       {badge && (
-        <div style={{
-          display: 'inline-block', fontSize: 11, fontWeight: 500, color: badge.color,
-          border: `1px solid ${badge.color}`, borderRadius: 20, padding: '2px 10px', marginBottom: 14,
-        }}>
+        <div style={{ ...pill(badge.color), display: 'inline-block', marginBottom: 14 }}>
           {badge.label}
         </div>
       )}

@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { Settings as SettingsIcon } from 'lucide-react';
 import { buildBookTree } from './data/books.js';
+import { countDueFresh } from './srs/cards.js';
 import { loadProgress, loadCustomVocab, addCustomVocab, addCustomVocabMany, exportAll, importAll, getSetting, setSetting } from './db/db.js';
 import { DEFAULT_RETENTION, setRetention as configureRetention } from './srs/scheduler.js';
 import { DEFAULT_NEW_PER_SESSION } from './hooks/useReview.js';
@@ -10,11 +12,12 @@ import AddWord from './components/AddWord.jsx';
 import BulkAddWords from './components/BulkAddWords.jsx';
 import BackupControls from './components/BackupControls.jsx';
 import Settings from './components/Settings.jsx';
-import { C } from './theme.js';
+import { C, card, backBtn } from './theme.js';
 
-// Top-level state machine: 'books' (landing) -> 'bookDetail' (one book's
-// chapters) -> 'review' | 'add' | 'bulkAdd'. Loads progress and custom vocab
-// from IndexedDB once, then hands slices to each screen.
+// Top-level state machine: 'books' (dashboard landing) -> 'bookDetail' (one
+// book's chapters) -> 'review' | 'add' | 'bulkAdd'; 'settings' is reached via
+// the header gear. Loads progress and custom vocab from IndexedDB once, then
+// hands slices to each screen.
 export default function App() {
   const [progressMap, setProgressMap] = useState(null);
   const [customVocab, setCustomVocab] = useState([]);
@@ -42,6 +45,13 @@ export default function App() {
   }, []);
 
   const tree = useMemo(() => buildBookTree(customVocab), [customVocab]);
+
+  // Today's totals across all books for the dashboard stat card. Same
+  // countDueFresh the per-book badges use — no separate due logic.
+  const todayTotals = useMemo(() => {
+    if (!progressMap) return { due: 0, fresh: 0 };
+    return countDueFresh(tree.flatMap((b) => b.units.flatMap((u) => u.items)), progressMap);
+  }, [tree, progressMap]);
 
   const selectedBook = useMemo(
     () => tree.find((b) => b.id === selectedBookId) || null,
@@ -114,18 +124,21 @@ export default function App() {
   }, []);
 
   if (progressMap === null) {
-    return <div style={{ fontFamily: 'Inter, sans-serif', color: C.inkSoft, padding: '3rem', textAlign: 'center' }}>Lade …</div>;
+    return <div style={{ fontFamily: 'Inter, sans-serif', color: C.textSoft, padding: '3rem', textAlign: 'center' }}>Lade …</div>;
   }
+
+  const hour = new Date().getHours();
+  const greeting = hour < 11 ? 'Guten Morgen' : hour < 18 ? 'Guten Tag' : 'Guten Abend';
 
   return (
     <div style={{
-      fontFamily: 'Inter, sans-serif', backgroundColor: C.parchmentLight, minHeight: '100vh',
-      color: C.ink, padding: '1.5rem 1rem 3rem',
+      fontFamily: 'Inter, sans-serif', backgroundColor: C.bg, minHeight: '100vh',
+      color: C.text, padding: '1.5rem 1rem 3rem',
     }}>
       <div style={{ maxWidth: 560, margin: '0 auto' }}>
         <header style={{
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          borderBottom: `1px solid ${C.hairline}`, paddingBottom: '0.85rem', marginBottom: '1.5rem',
+          borderBottom: `1px solid ${C.border}`, paddingBottom: '0.85rem', marginBottom: '1.5rem',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             {/* Logo lives in public/kalima-logo.png; hides itself gracefully
@@ -146,30 +159,77 @@ export default function App() {
               onClick={() => setHarakat((h) => !h)}
               style={{
                 fontFamily: 'inherit', fontSize: 12, fontWeight: 500,
-                background: harakat ? C.parchmentDeep : 'transparent',
-                border: `1px solid ${C.hairline}`, borderRadius: 20, padding: '4px 10px',
-                color: C.inkSoft, cursor: 'pointer',
+                background: harakat ? C.primarySoft : 'transparent',
+                border: `1px solid ${harakat ? C.primary : C.border}`, borderRadius: 999, padding: '4px 10px',
+                color: harakat ? C.primary : C.textSoft, cursor: 'pointer',
               }}
             >
               Harakat {harakat ? 'an' : 'aus'}
+            </button>
+          )}
+          {view === 'books' && (
+            <button
+              onClick={() => setView('settings')}
+              aria-label="Einstellungen"
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: 34, height: 34, borderRadius: 999, background: 'transparent',
+                border: 'none', color: C.textSoft, cursor: 'pointer',
+              }}
+            >
+              <SettingsIcon size={19} />
             </button>
           )}
         </header>
 
         {view === 'books' && (
           <>
+            <h1 style={{ fontFamily: 'Fraunces, serif', fontSize: 24, fontWeight: 600, margin: '0 0 0.9rem' }}>
+              {greeting}
+            </h1>
+            <div style={{ ...card, padding: '1rem 1.25rem', display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: '1.5rem' }}>
+              {todayTotals.due > 0 ? (
+                <>
+                  <span style={{ fontFamily: 'Fraunces, serif', fontSize: 32, fontWeight: 600, color: C.primary }}>
+                    {todayTotals.due}
+                  </span>
+                  <span style={{ fontSize: 14 }}>Karten heute fällig</span>
+                  {todayTotals.fresh > 0 && (
+                    <span style={{ fontSize: 13, color: C.textSoft }}>· {todayTotals.fresh} neu</span>
+                  )}
+                </>
+              ) : (
+                <span style={{ fontSize: 14, color: C.textSoft }}>
+                  Alles gelernt für heute{todayTotals.fresh > 0 ? ` · ${todayTotals.fresh} neue Karten warten` : ''}
+                </span>
+              )}
+            </div>
+            <div style={{ fontSize: 12.5, fontWeight: 500, color: C.textSoft, marginBottom: '0.6rem' }}>Bücher</div>
             <BookList
               tree={tree}
               progressMap={progressMap}
               onSelectBook={(bookId) => { setSelectedBookId(bookId); setView('bookDetail'); }}
             />
-            <Settings
-              retention={retention}
-              newPerSession={newPerSession}
-              onRetentionChange={handleRetentionChange}
-              onNewPerSessionChange={handleNewPerSessionChange}
-            />
-            <BackupControls onExport={handleExport} onImport={handleImport} />
+          </>
+        )}
+
+        {view === 'settings' && (
+          <>
+            <button onClick={() => setView('books')} style={{ ...backBtn, marginBottom: '1rem' }}>
+              ← Zurück
+            </button>
+            <div style={{ ...card, padding: '1.25rem 1.5rem' }}>
+              <h2 style={{ fontFamily: 'Fraunces, serif', fontSize: 20, fontWeight: 600, margin: '0 0 0.5rem' }}>
+                Einstellungen
+              </h2>
+              <Settings
+                retention={retention}
+                newPerSession={newPerSession}
+                onRetentionChange={handleRetentionChange}
+                onNewPerSessionChange={handleNewPerSessionChange}
+              />
+              <BackupControls onExport={handleExport} onImport={handleImport} />
+            </div>
           </>
         )}
 

@@ -4,7 +4,7 @@ import { useReview } from '../hooks/useReview.js';
 import { vocabForScope } from '../data/books.js';
 import Flashcard from './Flashcard.jsx';
 import GradeButtons from './GradeButtons.jsx';
-import { C } from '../theme.js';
+import { C, card, backBtn, primaryBtn } from '../theme.js';
 
 // A running review session for one scope. Owns nothing about scheduling —
 // that all lives in useReview / the scheduler wrapper.
@@ -27,19 +27,15 @@ export default function ReviewSession({ scope, scopeLabel, progressMap, customVo
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-        <button
-          onClick={onExit}
-          style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'none', border: 'none',
-            color: C.inkSoft, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, padding: 0 }}
-        >
+        <button onClick={onExit} style={backBtn}>
           <ArrowLeft size={15} /> Bücher
         </button>
-        <span style={{ fontSize: 12.5, color: C.inkSoft }}>{scopeLabel}</span>
+        <span style={{ fontSize: 12.5, color: C.textSoft }}>{scopeLabel}</span>
       </div>
 
       {!done && current ? (
         <>
-          <div style={{ fontSize: 12, color: C.inkSoft, textAlign: 'center', marginBottom: 10 }}>
+          <div style={{ fontSize: 12, color: C.textSoft, textAlign: 'center', marginBottom: 10 }}>
             noch {remaining} · {stats.reviewed} wiederholt
           </div>
           <Flashcard
@@ -50,18 +46,13 @@ export default function ReviewSession({ scope, scopeLabel, progressMap, customVo
           {revealed && <GradeButtons card={currentCard} onGrade={grade} />}
         </>
       ) : (
-        <div style={{ border: `1px solid ${C.hairline}`, borderRadius: 14, backgroundColor: C.parchment,
-          padding: '2.5rem 1.5rem', textAlign: 'center' }}>
+        <div style={{ ...card, padding: '2.5rem 1.5rem', textAlign: 'center' }}>
           <Sparkles size={22} color={C.gold} style={{ marginBottom: 10 }} />
           <div style={{ fontFamily: 'Fraunces, serif', fontSize: 19, marginBottom: 8 }}>Runde abgeschlossen</div>
-          <div style={{ fontSize: 13.5, color: C.inkSoft }}>
+          <div style={{ fontSize: 13.5, color: C.textSoft }}>
             {stats.reviewed} Karten{stats.again > 0 ? `, ${stats.again}× nochmal geübt` : ''}.
           </div>
-          <button
-            onClick={onExit}
-            style={{ marginTop: 16, background: C.teal, color: '#F8F2E3', border: 'none', borderRadius: 8,
-              padding: '9px 22px', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 500 }}
-          >
+          <button onClick={onExit} style={{ ...primaryBtn, marginTop: 16 }}>
             Zurück zu den Büchern
           </button>
         </div>

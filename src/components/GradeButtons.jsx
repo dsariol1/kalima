@@ -3,8 +3,8 @@ import { formatInterval } from '../utils/interval.js';
 import { C } from '../theme.js';
 
 const STYLE = {
-  again: { color: '#9C4A3C', bg: '#F3E4DF' },
-  good: { color: '#3E6259', bg: '#DEEAE4' },
+  again: { color: C.danger, bg: C.dangerSoft },
+  good: { color: C.primary, bg: C.primarySoft },
 };
 
 // Binary pass/fail: left = wrong/unsure (schedules again soon), right =
@@ -21,7 +21,7 @@ export default function GradeButtons({ card, onGrade }) {
           onClick={() => onGrade(r.grade)}
           style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
-            border: `1px solid ${C.hairline}`, borderRadius: 10,
+            border: 'none', borderRadius: 12,
             backgroundColor: STYLE[r.key].bg, color: STYLE[r.key].color,
             cursor: 'pointer', padding: '14px 8px', fontFamily: 'inherit',
           }}

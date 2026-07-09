@@ -1,12 +1,12 @@
-import { C } from '../theme.js';
+import { C, inputStyle } from '../theme.js';
 
 const RETENTION_MIN = 70;
 const RETENTION_MAX = 97;
 const NEW_PER_SESSION_MIN = 1;
 const NEW_PER_SESSION_MAX = 50;
 
-const label = { display: 'block', fontSize: 12.5, color: C.ink, marginBottom: 10 };
-const rowValue = { color: C.inkSoft, fontWeight: 400 };
+const label = { display: 'block', fontSize: 12.5, color: C.text, marginBottom: 10 };
+const rowValue = { color: C.textSoft, fontWeight: 400 };
 
 // User-tunable FSRS knobs. Persisted via setSetting in db.js; retention also
 // needs to reach the scheduler itself (see App.jsx's onRetentionChange).
@@ -14,11 +14,9 @@ export default function Settings({ retention, newPerSession, onRetentionChange, 
   const retentionPct = Math.round(retention * 100);
 
   return (
-    <div style={{
-      marginTop: '1.5rem', borderTop: `1px solid ${C.hairline}`, paddingTop: '1rem',
-    }}>
-      <div style={{ fontSize: 12, color: C.inkSoft, marginBottom: 12 }}>Einstellungen</div>
-
+    // Leads inside the settings card (App.jsx renders the heading), so no
+    // top divider of its own.
+    <div style={{ paddingTop: '0.5rem' }}>
       <label style={label}>
         Ziel-Behaltensrate <span style={rowValue}>· {retentionPct}%</span>
         <input
@@ -28,7 +26,7 @@ export default function Settings({ retention, newPerSession, onRetentionChange, 
           step={1}
           value={retentionPct}
           onChange={(e) => onRetentionChange(Number(e.target.value) / 100)}
-          style={{ width: '100%', marginTop: 6, accentColor: C.teal }}
+          style={{ width: '100%', marginTop: 6, accentColor: C.primary }}
         />
       </label>
 
@@ -45,11 +43,7 @@ export default function Settings({ retention, newPerSession, onRetentionChange, 
               onNewPerSessionChange(Math.min(NEW_PER_SESSION_MAX, Math.max(NEW_PER_SESSION_MIN, n)));
             }
           }}
-          style={{
-            display: 'block', marginTop: 6, width: 80, fontFamily: 'inherit', fontSize: 13.5,
-            border: `1px solid ${C.hairline}`, borderRadius: 8, padding: '6px 10px',
-            background: C.parchmentLight, color: C.ink,
-          }}
+          style={{ ...inputStyle, display: 'block', marginTop: 6, width: 80, fontSize: 13.5, padding: '6px 10px' }}
         />
       </label>
     </div>

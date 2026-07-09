@@ -117,4 +117,105 @@ export const quran80 = [
     ['لِمَاذَا', 'warum'],
     ['لَوْلَا', 'wenn nicht; warum nicht'],
   ]),
+
+  // ==== Etappe 2 (Seiten 4–6 der Quelle) ====
+
+  // ---- Zeitangaben (When?) ----
+  ...unit('zeit', 'Zeitangaben', [
+    ['قَبْلَ', 'vor (zeitlich)'],
+    ['بَعْدَ', 'nach (zeitlich)'],
+    ['حِين', 'Zeit, Zeitpunkt; zur Zeit von'],
+    ['إِذْ', 'als (Vergangenheit)'],
+    ['إِذَا', 'wenn (Zukunft)'],
+    ['ثُمَّ', 'dann; danach'],
+    ['فَ', 'dann; also, deshalb'],
+    ['بَلْ', 'nein, vielmehr; sondern; jedoch'],
+    ['عِنْدَ', 'bei; nahe (auch لَدَى)'],
+    ['إِنْ … إِلَّا', 'nichts … außer'],
+    ['مَا … إِلَّا', 'nichts … außer'],
+    ['أَلَّا', 'dass … nicht; damit nicht (أَنْ + لَا)'],
+  ]),
+
+  // ---- Verschiedenes (Miscellaneous) ----
+  ...unit('verschiedenes', 'Verschiedenes', [
+    ['ذُو', 'Besitzer von; versehen mit (m) (auch ذَا، ذِي)'],
+    ['ذَات', 'Besitzerin von; versehen mit (f)'],
+    ['أُولُو', 'Leute von; Besitzer von (auch أُولِي)'],
+    ['أَهْل', 'Leute von; Angehörige'],
+    ['آل', 'Familie, Angehörige, Leute'],
+    ['أَلَا', 'wohlan!; nicht etwa …?'],
+    ['نِعْمَ', 'wie vortrefflich ist …'],
+    ['بِئْسَ', 'wie schlecht ist …'],
+    ['بِئْسَمَا', 'schlecht ist das, was …'],
+    ['مِثْل', 'etwas Ähnliches; gleich wie'],
+    ['مَثَل', 'Gleichnis (Pl. أَمْثَال)'],
+    ['مِمَّنْ', 'von denen, die; von wem (مِنْ + مَنْ)'],
+  ]),
+
+  // ---- Häufige Präpositionen (Prepositions) ----
+  // Nicht exakt "Präpositionen" benannt, damit das Kapitel in der
+  // Buchreihenfolge nummeriert bleibt (books.js sortiert exakt so benannte
+  // Kapitel ans Ende).
+  ...unit('praep', 'Häufige Präpositionen', [
+    ['بِ', 'mit, in, durch …'],
+    ['عَنْ', 'über; von'],
+    ['فِي', 'in'],
+    ['كَ', 'wie, als'],
+    ['لِ', 'für (auch لَ)'],
+    ['مِنْ', 'von, aus'],
+    ['إِلَى', 'zu, nach … hin'],
+    ['تَ', 'bei (Schwurpartikel)'],
+    ['حَتَّى', 'bis'],
+    ['عَلَى', 'auf'],
+    ['مَعَ', 'mit'],
+    ['وَ', 'und; bei (Schwurpartikel)'],
+  ]),
+
+  // ---- Präpositionen mit مَا (Prepositions + مَا) ----
+  ...unit('praep-ma', 'Präpositionen mit مَا', [
+    ['بِمَا', 'womit; weil'],
+    ['عَمَّا', 'worüber; wovon'],
+    ['فِيمَا', 'worin'],
+    ['كَمَا', 'so wie, ebenso wie'],
+    ['لِمَا', 'wofür; für das, was'],
+    ['مِمَّا', 'woraus; von dem, was'],
+    ['أَمَّا', 'was … betrifft'],
+    ['إِمَّا', 'entweder … oder; wenn'],
+    ['أَنَّمَا', 'dass'],
+    ['إِنَّمَا', 'wahrlich; nichts als'],
+    ['كَأَنَّمَا', 'als ob'],
+    ['كُلَّمَا', 'immer wenn; jedes Mal wenn'],
+  ]),
+
+  // ---- Verbpräfixe (Prefix for verb…) ----
+  ...unit('verbpraefix', 'Verbpräfixe', [
+    ['قَدْ', 'bereits (Vergangenheit); gewiss (Gegenwart)'],
+    ['سَ', 'wird (nahe Zukunft)'],
+    ['سَوْفَ', 'wird (Zukunft)'],
+    ['لَ … نَّ', 'wird gewiss (لَ + Verb + نَّ)'],
+    ['لَقَدْ', 'wahrlich, gewiss'],
+    ['لَ', 'wahrlich, gewiss'],
+    ['لِ', 'lass … tun (Imperativpartikel, auch لْ)'],
+    ['أَل', 'der/die/das (Artikel)'],
+    ['أَمْ', 'oder? (in Fragen)'],
+    ['أَوْ', 'oder'],
+    ['بَعْض', 'einige von; ein Teil von'],
+    ['كُلّ', 'alle; jeder; ganz'],
+  ]),
+
+  // ---- Inna-Gruppe (Inna) ----
+  ...unit('inna', 'Inna-Gruppe', [
+    ['إِنَّ', 'wahrlich, gewiss'],
+    ['أَنَّ', 'dass'],
+    ['كَأَنَّ', 'als ob'],
+    ['لَكِنَّ', 'aber, jedoch (auch لَكِنْ)'],
+    ['لَعَلَّ', 'vielleicht; möge'],
+    ['أَنْ', 'dass'],
+    ['إِنْ', 'wenn, falls'],
+    ['إِيَّا', 'allein (nur mit Suffix)'],
+    ['عَسَى', 'möglicherweise; vielleicht'],
+    ['لَمَّا', 'als; sobald'],
+    ['لَوْ', 'wenn (irreal)'],
+    ['يَا أَيُّهَا', 'o! (Anrede)'],
+  ]),
 ];
