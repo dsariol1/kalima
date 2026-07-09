@@ -3,11 +3,12 @@ import { Keyboard, Share2 } from 'lucide-react';
 import { checkAnswer } from '../utils/answerCheck.js';
 import ArabicKeyboard from './ArabicKeyboard.jsx';
 import { C, card as cardStyle, primaryBtn, linkBtn, inputStyle, pill } from '../theme.js';
+import { ROOT_KEYS } from '../data/rootFamilies.js';
 
-// Der Wurzel-Explorer-Prototyp kennt bisher nur diese vier ausgearbeiteten
-// Wurzeln. Der Einstiegslink erscheint deshalb nur für Karten mit genau
-// einer davon.
-const ROOT_EXPLORER_DEMO_ROOTS = new Set(['كتب', 'درس', 'عمل', 'سكن']);
+// Der Wurzel-Explorer-Prototyp kennt bisher nur die Wurzeln aus
+// rootFamilies.js. Der Einstiegslink erscheint deshalb nur für Karten mit
+// genau einer davon.
+const ROOT_EXPLORER_DEMO_ROOTS = new Set(ROOT_KEYS);
 
 const BADGE = {
   recognition: { label: 'Erkennen', color: C.primary },
@@ -41,7 +42,7 @@ function RootFamily({ card, family, onExploreRoot }) {
       </div>
       {canExplore && (
         <button
-          onClick={() => onExploreRoot(rootKey, card.bare)}
+          onClick={() => onExploreRoot(rootKey, card.ar)}
           style={{ ...linkBtn, margin: '0 auto 10px', justifyContent: 'center' }}
         >
           <Share2 size={13} /> Wurzelfamilie erkunden

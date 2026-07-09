@@ -11,6 +11,14 @@ const HARAKAT = /[ً-ْٰـ]/g;
 const stripHarakat = (s) => s.replace(HARAKAT, '');
 const wordText = (segments) => segments.map((s) => s.t).join('');
 
+// Verankerung/Matching gegen echte Vokabeldaten braucht mehr Präzision als
+// volles Harakat-Strippen: مَدْرَسَة "Schule" und مُدَرِّسَة "Lehrerin" teilen
+// denselben bare-Text ("مدرسة"), sind aber verschiedene Wörter. Nur die
+// auslautende Fallvokal-Endung entfernen (z.B. يَكْتُبُ vs. im Buch zitiertes
+// يَكْتُب) erhält interne Diakritika, die solche Homographe unterscheiden.
+const TRAILING_HARAKAT = /[ًٌٍَُِّْ]+$/;
+export const normalizeCitation = (ar) => ar.replace(TRAILING_HARAKAT, '');
+
 const PATTERN_MEANINGS = {
   'فَعَلَ': 'Grundstamm, Perfekt — die reine Handlung in der Vergangenheit, ohne Zusatzbedeutung.',
   'فَعِلَ': 'Grundstamm, Perfekt (Kasra-Typ) — meist Zustände oder Empfindungen; gleiche Funktion wie فَعَلَ.',
@@ -37,10 +45,11 @@ const PATTERN_MEANINGS = {
   'مُفَعِّلَة': 'Aktives Partizip der Form II, feminin.',
 };
 
-function family(root, rootMeaning, words) {
+function family(root, rootMeaning, defaultCenterId, words) {
   return {
     root: root.split(''),
     rootMeaning,
+    defaultCenterId,
     words: words.map((w) => ({
       ...w,
       ar: wordText(w.segments),
@@ -55,7 +64,7 @@ const P = (t) => ({ t, root: false });
 
 export const ROOT_FAMILIES = {
   // ---- ك ت ب — schreiben ----
-  'كتب': family('كتب', 'schreiben', [
+  'كتب': family('كتب', 'schreiben', 'kitab', [
     { id: 'kataba', de: 'er schrieb', type: 'Verb (Perfekt)', frequency: 4, relation: 'Handlung',
       segments: [R('كَ'), R('تَ'), R('بَ')], pattern: 'فَعَلَ',
       parallels: [{ ar: 'ذَهَبَ', de: 'er ging' }, { ar: 'فَتَحَ', de: 'er öffnete' }, { ar: 'جَلَسَ', de: 'er sass' }],
@@ -103,7 +112,7 @@ export const ROOT_FAMILIES = {
   ]),
 
   // ---- د ر س — lernen, studieren ----
-  'درس': family('درس', 'lernen, studieren', [
+  'درس': family('درس', 'lernen, studieren', 'madrasa', [
     { id: 'darasa', de: 'er lernte, studierte', type: 'Verb (Perfekt)', frequency: 4, relation: 'Handlung',
       segments: [R('دَ'), R('رَ'), R('سَ')], pattern: 'فَعَلَ',
       parallels: [{ ar: 'كَتَبَ', de: 'er schrieb' }, { ar: 'عَمِلَ', de: 'er tat' }, { ar: 'سَكَنَ', de: 'er wohnte' }],
@@ -143,7 +152,7 @@ export const ROOT_FAMILIES = {
   ]),
 
   // ---- ع م ل — tun, machen, arbeiten ----
-  'عمل': family('عمل', 'tun, machen, arbeiten', [
+  'عمل': family('عمل', 'tun, machen, arbeiten', 'amal', [
     { id: 'amila', de: 'er tat, machte', type: 'Verb (Perfekt)', frequency: 4, relation: 'Handlung',
       segments: [R('عَ'), R('مِ'), R('لَ')], pattern: 'فَعِلَ',
       parallels: [{ ar: 'فَرِحَ', de: 'er freute sich' }, { ar: 'شَرِبَ', de: 'er trank' }, { ar: 'حَفِظَ', de: 'er bewahrte, lernte auswendig' }],
@@ -179,7 +188,7 @@ export const ROOT_FAMILIES = {
   ]),
 
   // ---- س ك ن — wohnen, ruhen ----
-  'سكن': family('سكن', 'wohnen, ruhen', [
+  'سكن': family('سكن', 'wohnen, ruhen', 'maskan', [
     { id: 'sakana', de: 'er wohnte, beruhigte sich', type: 'Verb (Perfekt)', frequency: 4, relation: 'Handlung',
       segments: [R('سَ'), R('كَ'), R('نَ')], pattern: 'فَعَلَ',
       parallels: [{ ar: 'كَتَبَ', de: 'er schrieb' }, { ar: 'دَرَسَ', de: 'er lernte' }, { ar: 'عَمِلَ', de: 'er tat' }],
@@ -216,3 +225,13 @@ export const ROOT_FAMILIES = {
 };
 
 export const ROOT_KEYS = Object.keys(ROOT_FAMILIES);
+
+// ar (normalisiert) -> { rootKey, wordId } über alle Familien — macht
+// Parallelen-Chips klickbar (RootExplorer.jsx), wenn das genannte Wort
+// tatsächlich Teil einer der ausgearbeiteten Familien ist.
+export const WORD_INDEX = new Map();
+for (const rootKey of ROOT_KEYS) {
+  for (const w of ROOT_FAMILIES[rootKey].words) {
+    WORD_INDEX.set(normalizeCitation(w.ar), { rootKey, wordId: w.id });
+  }
+}

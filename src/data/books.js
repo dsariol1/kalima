@@ -35,6 +35,15 @@ export const BOOK_META = [
     level: 'A2',
     accent: '#3A6B8C',
   },
+  {
+    id: 'roots',
+    title: 'عائلات الجذور',
+    subtitle: 'من الوُرزِ-إكسبلورر',
+    titleDe: 'Wurzelfamilien',
+    descDe: 'Wörter, die du im Wurzel-Explorer entdeckt und übernommen hast.',
+    level: '—',
+    accent: '#7C5CBF',
+  },
 ];
 
 // All built-in vocabulary in one flat array.

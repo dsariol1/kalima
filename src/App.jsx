@@ -25,8 +25,11 @@ export default function App() {
   const [harakat, setHarakat] = useState(true);
   const [view, setView] = useState('books');
   const [scope, setScope] = useState(null);
-  const [rootExplorerBare, setRootExplorerBare] = useState(null);
-  const [rootExplorerKey, setRootExplorerKey] = useState(null);
+  // Overlay statt eigener View: bleibt unabhängig davon offenbar/schliessbar,
+  // welche View gerade aktiv ist — insbesondere darf eine laufende
+  // ReviewSession beim Öffnen nicht unmounten (sonst geht der Fortschritt
+  // der aktuellen Runde verloren).
+  const [explorer, setExplorer] = useState(null); // { rootKey, ar } | null
   const [selectedBookId, setSelectedBookId] = useState(null);
   const [retention, setRetentionState] = useState(DEFAULT_RETENTION);
   const [newPerSession, setNewPerSession] = useState(DEFAULT_NEW_PER_SESSION);
@@ -72,13 +75,16 @@ export default function App() {
   }, []);
 
   // Einstieg in den Wurzel-Explorer, wahlweise von einer Flashcard aus
-  // zentriert auf deren Wurzel + Wort (rootKey/bare — Prototyp kennt nur
-  // vier Wurzeln, trifft eine Karte keine davon, zeigt der Explorer seinen
-  // Standard-Einstieg).
-  const openRootExplorer = useCallback((rootKey = null, bare = null) => {
-    setRootExplorerKey(rootKey);
-    setRootExplorerBare(bare);
-    setView('roots');
+  // zentriert auf deren Wurzel + Wort (rootKey/ar — Prototyp kennt nur vier
+  // Wurzeln, trifft eine Karte keine davon, zeigt der Explorer seinen
+  // Standard-Einstieg). Öffnet als Overlay, kein View-Wechsel.
+  const openRootExplorer = useCallback((rootKey = null, ar = null) => {
+    setExplorer({ rootKey, ar });
+  }, []);
+
+  const learnWordFromExplorer = useCallback(async (entry) => {
+    await addCustomVocab(entry);
+    setCustomVocab((v) => [...v, entry]);
   }, []);
 
   const scopeLabel = useMemo(() => {
@@ -233,10 +239,6 @@ export default function App() {
           </>
         )}
 
-        {view === 'roots' && (
-          <RootExplorer initialRootKey={rootExplorerKey} initialCenterBare={rootExplorerBare} onBack={() => setView('books')} />
-        )}
-
         {view === 'settings' && (
           <>
             <button onClick={() => setView('books')} style={{ ...backBtn, marginBottom: '1rem' }}>
@@ -300,6 +302,28 @@ export default function App() {
           />
         )}
       </div>
+
+      {/* Overlay statt View — läuft eine Review-Session, bleibt sie beim
+          Öffnen des Explorers gemountet und macht beim Schliessen genau
+          dort weiter. Breitere Bühne (1080) als der Rest der App: der
+          Explorer nutzt auf Desktop ein Zwei-Spalten-Layout. */}
+      {explorer && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 20, overflowY: 'auto',
+          backgroundColor: C.bg, fontFamily: 'Inter, sans-serif', color: C.text,
+          padding: '1.5rem 1.5rem 3rem',
+        }}>
+          <div style={{ maxWidth: 1080, margin: '0 auto' }}>
+            <RootExplorer
+              initialRootKey={explorer.rootKey}
+              initialCenterAr={explorer.ar}
+              customVocab={customVocab}
+              onLearnWord={learnWordFromExplorer}
+              onBack={() => setExplorer(null)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -8,7 +8,7 @@ import { C, card, pill } from '../theme.js';
 export default function BookList({ tree, progressMap, onSelectBook }) {
   return (
     <div>
-      {tree.map((book) => {
+      {tree.filter((book) => book.total > 0).map((book) => {
         const items = book.units.flatMap((u) => u.items);
         const { due, fresh } = countDueFresh(items, progressMap);
         return (
