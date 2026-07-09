@@ -12,6 +12,7 @@ import AddWord from './components/AddWord.jsx';
 import BulkAddWords from './components/BulkAddWords.jsx';
 import BackupControls from './components/BackupControls.jsx';
 import Settings from './components/Settings.jsx';
+import RootExplorer from './components/RootExplorer.jsx';
 import { C, card, backBtn } from './theme.js';
 
 // Top-level state machine: 'books' (dashboard landing) -> 'bookDetail' (one
@@ -24,6 +25,8 @@ export default function App() {
   const [harakat, setHarakat] = useState(true);
   const [view, setView] = useState('books');
   const [scope, setScope] = useState(null);
+  const [rootExplorerBare, setRootExplorerBare] = useState(null);
+  const [rootExplorerKey, setRootExplorerKey] = useState(null);
   const [selectedBookId, setSelectedBookId] = useState(null);
   const [retention, setRetentionState] = useState(DEFAULT_RETENTION);
   const [newPerSession, setNewPerSession] = useState(DEFAULT_NEW_PER_SESSION);
@@ -66,6 +69,16 @@ export default function App() {
   const startReview = useCallback((s) => {
     setScope(s);
     setView('review');
+  }, []);
+
+  // Einstieg in den Wurzel-Explorer, wahlweise von einer Flashcard aus
+  // zentriert auf deren Wurzel + Wort (rootKey/bare — Prototyp kennt nur
+  // vier Wurzeln, trifft eine Karte keine davon, zeigt der Explorer seinen
+  // Standard-Einstieg).
+  const openRootExplorer = useCallback((rootKey = null, bare = null) => {
+    setRootExplorerKey(rootKey);
+    setRootExplorerBare(bare);
+    setView('roots');
   }, []);
 
   const scopeLabel = useMemo(() => {
@@ -140,18 +153,13 @@ export default function App() {
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           borderBottom: `1px solid ${C.border}`, paddingBottom: '0.85rem', marginBottom: '1.5rem',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            {/* Logo lives in public/kalima-logo.png; hides itself gracefully
-                if the file isn't there yet, leaving just the wordmark. */}
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            {/* Full lockup (icon + wordmark baked into one image). */}
             <img
-              src="/kalima-logo.png"
-              alt=""
-              onError={(e) => { e.currentTarget.style.display = 'none'; }}
-              style={{ height: 32, width: 'auto', display: 'block' }}
+              src="/KalimaLogo.png"
+              alt="Kalima+"
+              style={{ height: 60, width: 'auto', display: 'block', mixBlendMode: 'multiply' }}
             />
-            <span style={{ fontFamily: 'Fraunces, serif', fontSize: 22, fontWeight: 600 }}>
-              Kalima<span style={{ color: C.gold }}>+</span>
-            </span>
           </div>
           {/* Harakat toggle only matters while a word is being quizzed. */}
           {view === 'review' && (
@@ -210,7 +218,23 @@ export default function App() {
               progressMap={progressMap}
               onSelectBook={(bookId) => { setSelectedBookId(bookId); setView('bookDetail'); }}
             />
+            {/* Prototyp — vier Demo-Wurzeln (ك ت ب, د ر س, ع م ل, س ك ن). */}
+            <div style={{ textAlign: 'center', marginTop: '1.25rem' }}>
+              <button
+                onClick={() => openRootExplorer()}
+                style={{
+                  background: 'none', border: 'none', color: C.gold, cursor: 'pointer',
+                  fontFamily: 'inherit', fontSize: 13, fontWeight: 500,
+                }}
+              >
+                Wurzel-Explorer (Beta) →
+              </button>
+            </div>
           </>
+        )}
+
+        {view === 'roots' && (
+          <RootExplorer initialRootKey={rootExplorerKey} initialCenterBare={rootExplorerBare} onBack={() => setView('books')} />
         )}
 
         {view === 'settings' && (
@@ -254,6 +278,7 @@ export default function App() {
             newPerSession={newPerSession}
             onProgressChange={handleProgressChange}
             onExit={() => setView('bookDetail')}
+            onExploreRoot={openRootExplorer}
           />
         )}
 

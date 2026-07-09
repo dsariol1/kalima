@@ -1,8 +1,13 @@
 import { useRef, useState } from 'react';
-import { Keyboard } from 'lucide-react';
+import { Keyboard, Share2 } from 'lucide-react';
 import { checkAnswer } from '../utils/answerCheck.js';
 import ArabicKeyboard from './ArabicKeyboard.jsx';
 import { C, card as cardStyle, primaryBtn, linkBtn, inputStyle, pill } from '../theme.js';
+
+// Der Wurzel-Explorer-Prototyp kennt bisher nur diese vier ausgearbeiteten
+// Wurzeln. Der Einstiegslink erscheint deshalb nur für Karten mit genau
+// einer davon.
+const ROOT_EXPLORER_DEMO_ROOTS = new Set(['كتب', 'درس', 'عمل', 'سكن']);
 
 const BADGE = {
   recognition: { label: 'Erkennen', color: C.primary },
@@ -16,22 +21,32 @@ const VERDICT = {
 
 function ArabicWord({ card, harakat }) {
   return (
-    <div dir="rtl" style={{ fontFamily: 'Amiri, serif', fontSize: 46, lineHeight: 1.3 }}>
+    <div dir="rtl" style={{ fontFamily: 'Amiri, serif', fontSize: 46, lineHeight: 1.5, paddingTop: 6 }}>
       {harakat ? card.ar : card.bare}
     </div>
   );
 }
 
-function RootFamily({ card, family }) {
+function RootFamily({ card, family, onExploreRoot }) {
   if (!card.root) return null;
+  const rootKey = card.root.join('');
+  const canExplore = onExploreRoot && ROOT_EXPLORER_DEMO_ROOTS.has(rootKey);
   return (
     <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 12 }}>
       <div dir="rtl" style={{ fontFamily: 'Amiri, serif', fontSize: 22, letterSpacing: 3, marginBottom: 2 }}>
         {card.root.join(' ')}
       </div>
-      <div style={{ fontSize: 12.5, color: C.textSoft, marginBottom: family.length ? 10 : 0 }}>
+      <div style={{ fontSize: 12.5, color: C.textSoft, marginBottom: 8 }}>
         Wurzel · {card.rootMeaning}
       </div>
+      {canExplore && (
+        <button
+          onClick={() => onExploreRoot(rootKey, card.bare)}
+          style={{ ...linkBtn, margin: '0 auto 10px', justifyContent: 'center' }}
+        >
+          <Share2 size={13} /> Wurzelfamilie erkunden
+        </button>
+      )}
       {family.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
           {family.map((f) => (
@@ -67,7 +82,7 @@ function Example({ card }) {
 // then self-grade. `onReveal` flips the parent into its grade-buttons state;
 // the typed verdict is a hint, the grade stays the learner's call (FSRS is
 // self-graded throughout the app).
-function ProductionCard({ card, harakat, revealed, onReveal, family, showKeyboard, onToggleKeyboard }) {
+function ProductionCard({ card, harakat, revealed, onReveal, family, showKeyboard, onToggleKeyboard, onExploreRoot }) {
   const [input, setInput] = useState('');
   const [correct, setCorrect] = useState(false);
   const inputRef = useRef(null);
@@ -151,7 +166,7 @@ function ProductionCard({ card, harakat, revealed, onReveal, family, showKeyboar
       )}
       <ArabicWord card={card} harakat={harakat} />
       <div style={{ marginTop: 14 }}>
-        <RootFamily card={card} family={family} />
+        <RootFamily card={card} family={family} onExploreRoot={onExploreRoot} />
         <Example card={card} />
       </div>
     </>
@@ -159,7 +174,7 @@ function ProductionCard({ card, harakat, revealed, onReveal, family, showKeyboar
 }
 
 // The Arabic -> German prompt: see the word, recall the meaning, self-grade.
-function RecognitionCard({ card, harakat, revealed, onReveal, family }) {
+function RecognitionCard({ card, harakat, revealed, onReveal, family, onExploreRoot }) {
   return (
     <>
       <ArabicWord card={card} harakat={harakat} />
@@ -168,7 +183,7 @@ function RecognitionCard({ card, harakat, revealed, onReveal, family }) {
       ) : (
         <div style={{ marginTop: 16 }}>
           <div style={{ fontFamily: 'Fraunces, serif', fontSize: 21, marginBottom: 14 }}>{card.de}</div>
-          <RootFamily card={card} family={family} />
+          <RootFamily card={card} family={family} onExploreRoot={onExploreRoot} />
           <Example card={card} />
         </div>
       )}
@@ -177,7 +192,7 @@ function RecognitionCard({ card, harakat, revealed, onReveal, family }) {
 }
 
 // One vocabulary card, direction-aware. See the two card components above.
-export default function Flashcard({ card, direction, harakat, revealed, onReveal, family, showKeyboard, onToggleKeyboard }) {
+export default function Flashcard({ card, direction, harakat, revealed, onReveal, family, showKeyboard, onToggleKeyboard, onExploreRoot }) {
   const badge = BADGE[direction];
   const Card = direction === 'production' ? ProductionCard : RecognitionCard;
 
@@ -191,13 +206,13 @@ export default function Flashcard({ card, direction, harakat, revealed, onReveal
       }}
     >
       {badge && (
-        <div style={{ ...pill(badge.color), display: 'inline-block', marginBottom: 14 }}>
+        <div style={{ ...pill(badge.color), display: 'inline-block', marginBottom: 22 }}>
           {badge.label}
         </div>
       )}
       <Card
         card={card} harakat={harakat} revealed={revealed} onReveal={onReveal} family={family}
-        showKeyboard={showKeyboard} onToggleKeyboard={onToggleKeyboard}
+        showKeyboard={showKeyboard} onToggleKeyboard={onToggleKeyboard} onExploreRoot={onExploreRoot}
       />
     </div>
   );

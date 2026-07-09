@@ -8,7 +8,7 @@ import { C, card, backBtn, primaryBtn } from '../theme.js';
 
 // A running review session for one scope. Owns nothing about scheduling —
 // that all lives in useReview / the scheduler wrapper.
-export default function ReviewSession({ scope, scopeLabel, progressMap, customVocab, harakat, newPerSession, onProgressChange, onExit }) {
+export default function ReviewSession({ scope, scopeLabel, progressMap, customVocab, harakat, newPerSession, onProgressChange, onExit, onExploreRoot }) {
   const { current, direction, currentCard, revealed, reveal, grade, stats, remaining, done } = useReview({
     scope, progressMap, customVocab, onProgressChange, newPerSession,
   });
@@ -42,6 +42,7 @@ export default function ReviewSession({ scope, scopeLabel, progressMap, customVo
             key={`${current.id}:${direction}`}
             card={current} direction={direction} harakat={harakat} revealed={revealed} onReveal={reveal} family={family}
             showKeyboard={showKeyboard} onToggleKeyboard={() => setShowKeyboard((s) => !s)}
+            onExploreRoot={onExploreRoot}
           />
           {revealed && <GradeButtons card={currentCard} onGrade={grade} />}
         </>
