@@ -1,37 +1,138 @@
-# Projektkontext für Claude Code
+# Kalima+ – Projektkontext
 
-Vokabeltrainer für Hocharabisch (Fusha). Spaced Repetition mit FSRS. React + Vite,
-komplett clientseitig, keine Backend-Abhängigkeit.
+## Projekt
+
+Kalima+ ist ein clientseitiger Vokabeltrainer für modernes Hocharabisch (Fusha).
+
+Ziel ist strukturiertes Lernen mit Spaced Repetition (FSRS).
+
+Jede Vokabel besitzt zwei unabhängige Lernkarten:
+
+- Erkennen (Arabisch → Deutsch)
+- Produzieren (Deutsch → Arabisch)
+
+Produktionskarten werden erst freigeschaltet, wenn die Erkennungskarte mindestens einmal erfolgreich beantwortet wurde.
+
+---
 
 ## Architektur-Regeln
 
-- **Nur `src/srs/scheduler.js` importiert `ts-fsrs`.** Alle Scheduling-Aufrufe laufen
-  über diesen Wrapper, damit der Algorithmus austauschbar bleibt.
-- **Persistenz ausschliesslich über `src/db/db.js`** (Dexie/IndexedDB). Kein
-  `localStorage`, kein `window.storage`. FSRS-Karten speichern `Date`-Objekte —
-  Dexie serialisiert die nativ, nicht manuell in JSON wandeln.
-- **Vokabel-Shape** (einheitlich für Built-in und eigene Wörter):
-  `{ id, bookId, unit, unitDe, pos, ar, bare, translit, de, root|null, rootMeaning|null, example?{ ar, de } }`
-  `bare` = `ar` ohne Harakat (Unicode-Bereich U+064B–U+0652, U+0670).
-- **Der Buch→Lektion-Baum wird abgeleitet**, nicht doppelt gepflegt: `buildBookTree()`
-  in `books.js` gruppiert Vokabeln nach `bookId` und `unit`.
+- Nur `src/srs/scheduler.js` importiert `ts-fsrs`.
+- Persistenz ausschließlich über `src/db/db.js` (Dexie).
+- Keine Verwendung von `localStorage`.
+- Dexie speichert `Date`-Objekte nativ.
+- Kartenverwaltung und Scheduling bleiben strikt getrennt.
+- Karten-ID:
 
-## Tech-Stack
+`${vocabId}::${direction}`
 
-- React 19, Vite 8, `ts-fsrs` v5, `dexie` v4, `lucide-react` für Icons.
-- Styling ist inline über Tokens aus `src/theme.js` (bewusst kein CSS-Framework,
-  klein genug). Arabische Schrift: Amiri. Display: Fraunces. UI: Inter.
+---
 
-## Urheberrecht — wichtig
+## Datenmodell
 
-Keine Lehrbuchinhalte reproduzieren (Dialoge, Originalsätze, Übungen, Grammatik).
-Nur einzelne Wörter + Bedeutungen (= Sprachfakten) und eigene Beispielsätze.
-Nutzer bauen ihr Deck über die „Eigenes Wort"-Funktion aus eigenem Lernstoff.
+Vokabel:
 
-## Sprache
+```ts
+{
+  id,
+  bookId,
+  unit,
+  unitDe,
+  pos,
+  ar,
+  bare,
+  translit,
+  de,
+  root,
+  rootMeaning,
+  example
+}
+```
 
-UI-Texte und Doku auf Deutsch. Code-Kommentare Englisch ist ok.
+`bare` enthält den arabischen Text ohne Harakat.
+
+---
+
+## UI-Regeln
+
+- UI auf Deutsch
+- Arabische Inhalte bleiben unverändert
+- Umschrift wird nicht angezeigt
+- Harakat können während des Reviews optional eingeblendet werden
+- Produktionskarten besitzen eine Bildschirmtastatur
+- Cursorposition muss beim Tippen erhalten bleiben
+
+---
+
+## Inhaltsstruktur
+
+Bücher bestehen aus Kapiteln.
+
+Kapitelnummern werden ausschließlich zur Laufzeit erzeugt.
+
+Kapitel mit den Titeln
+
+- Pronomen
+- Adverbien
+- Präpositionen
+
+werden immer ans Ende sortiert und nicht nummeriert.
+
+---
+
+## Import
+
+Bulk-Import ist fehlertolerant.
+
+Ungültige Zeilen werden gemeldet.
+
+Der Import wird nicht abgebrochen.
+
+---
+
+## Tech Stack
+
+- React 19
+- Vite
+- Dexie
+- ts-fsrs v5
+- lucide-react
+
+Fonts:
+
+- Amiri
+- Fraunces
+- Inter
+
+---
+
+## Urheberrecht
+
+Keine Lehrbuchtexte, Dialoge oder Übungen reproduzieren.
+
+Nur Sprachfakten:
+
+- Wörter
+- Bedeutungen
+- selbst geschriebene Beispielsätze
+
+---
+
+## Coding-Regeln
+
+- Bestehende Architektur respektieren.
+- Vorhandene Komponenten bevorzugt erweitern statt neue anzulegen.
+- Geschäftslogik nicht duplizieren.
+- Scheduler und Persistenz nicht vermischen.
+- Kleine, klar abgegrenzte Komponenten bevorzugen.
+- Änderungen möglichst minimal und konsistent halten.
+
+---
 
 ## Befehle
 
-`npm run dev` · `npm run build` · `npm run lint`
+npm run dev
+
+npm run build
+
+npm run lint
