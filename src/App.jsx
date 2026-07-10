@@ -2,9 +2,11 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Settings as SettingsIcon } from 'lucide-react';
 import { buildBookTree } from './data/books.js';
 import { countDueFresh } from './srs/cards.js';
-import { loadProgress, loadCustomVocab, addCustomVocab, addCustomVocabMany, exportAll, importAll, getSetting, setSetting } from './db/db.js';
+import { loadProgress, loadCustomVocab, addCustomVocab, addCustomVocabMany, exportAll, importAll, getSetting, setSetting, reviewsToday, currentStreak } from './db/db.js';
 import { DEFAULT_RETENTION, setRetention as configureRetention } from './srs/scheduler.js';
 import { DEFAULT_NEW_PER_SESSION } from './hooks/useReview.js';
+import Dashboard from './components/Dashboard.jsx';
+import QuizSession from './components/QuizSession.jsx';
 import BookList from './components/BookList.jsx';
 import BookDetail from './components/BookDetail.jsx';
 import ReviewSession from './components/ReviewSession.jsx';
@@ -15,15 +17,16 @@ import Settings from './components/Settings.jsx';
 import RootExplorer from './components/RootExplorer.jsx';
 import { C, card, backBtn } from './theme.js';
 
-// Top-level state machine: 'books' (dashboard landing) -> 'bookDetail' (one
-// book's chapters) -> 'review' | 'add' | 'bulkAdd'; 'settings' is reached via
-// the header gear. Loads progress and custom vocab from IndexedDB once, then
-// hands slices to each screen.
+// Top-level state machine: 'home' (Dashboard mit Lernwerkzeugen) ->
+// 'books' (Karteikarten-Tool) -> 'bookDetail' -> 'review' | 'add' | 'bulkAdd';
+// 'home' -> 'quiz'; 'settings' is reached via the header gear (nur auf 'home').
+// Loads progress and custom vocab from IndexedDB once, then hands slices to
+// each screen.
 export default function App() {
   const [progressMap, setProgressMap] = useState(null);
   const [customVocab, setCustomVocab] = useState([]);
   const [harakat, setHarakat] = useState(true);
-  const [view, setView] = useState('books');
+  const [view, setView] = useState('home');
   const [scope, setScope] = useState(null);
   // Overlay statt eigener View: bleibt unabhängig davon offenbar/schliessbar,
   // welche View gerade aktiv ist — insbesondere darf eine laufende
@@ -33,6 +36,8 @@ export default function App() {
   const [selectedBookId, setSelectedBookId] = useState(null);
   const [retention, setRetentionState] = useState(DEFAULT_RETENTION);
   const [newPerSession, setNewPerSession] = useState(DEFAULT_NEW_PER_SESSION);
+  const [doneToday, setDoneToday] = useState(0);
+  const [streak, setStreak] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -52,12 +57,25 @@ export default function App() {
 
   const tree = useMemo(() => buildBookTree(customVocab), [customVocab]);
 
+  const allItems = useMemo(() => tree.flatMap((b) => b.units.flatMap((u) => u.items)), [tree]);
+
   // Today's totals across all books for the dashboard stat card. Same
   // countDueFresh the per-book badges use — no separate due logic.
   const todayTotals = useMemo(() => {
     if (!progressMap) return { due: 0, fresh: 0 };
-    return countDueFresh(tree.flatMap((b) => b.units.flatMap((u) => u.items)), progressMap);
-  }, [tree, progressMap]);
+    return countDueFresh(allItems, progressMap);
+  }, [allItems, progressMap]);
+
+  // Ring + Streak bei jeder Rückkehr auf die Startseite neu laden — nach
+  // einer Review-Runde wären die Mount-Werte sonst eingefroren.
+  useEffect(() => {
+    if (view !== 'home') return;
+    (async () => {
+      const [d, s] = await Promise.all([reviewsToday(), currentStreak()]);
+      setDoneToday(d);
+      setStreak(s);
+    })();
+  }, [view]);
 
   const selectedBook = useMemo(
     () => tree.find((b) => b.id === selectedBookId) || null,
@@ -146,9 +164,6 @@ export default function App() {
     return <div style={{ fontFamily: 'Inter, sans-serif', color: C.textSoft, padding: '3rem', textAlign: 'center' }}>Lade …</div>;
   }
 
-  const hour = new Date().getHours();
-  const greeting = hour < 11 ? 'Guten Morgen' : hour < 18 ? 'Guten Tag' : 'Guten Abend';
-
   return (
     <div style={{
       fontFamily: 'Inter, sans-serif', backgroundColor: C.bg, minHeight: '100vh',
@@ -159,13 +174,10 @@ export default function App() {
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           borderBottom: `1px solid ${C.border}`, paddingBottom: '0.85rem', marginBottom: '1.5rem',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            {/* Full lockup (icon + wordmark baked into one image). */}
-            <img
-              src="/KalimaLogo.png"
-              alt="Kalima+"
-              style={{ height: 60, width: 'auto', display: 'block', mixBlendMode: 'multiply' }}
-            />
+          {/* Text-Wortmarke in der Display-Schrift der Begrüßung; das
+              goldene Plus ist das Markenzeichen. */}
+          <div style={{ fontFamily: 'Fraunces, serif', fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1 }}>
+            Kalima<span style={{ color: C.gold }}>+</span>
           </div>
           {/* Harakat toggle only matters while a word is being quizzed. */}
           {view === 'review' && (
@@ -181,7 +193,7 @@ export default function App() {
               Harakat {harakat ? 'an' : 'aus'}
             </button>
           )}
-          {view === 'books' && (
+          {view === 'home' && (
             <button
               onClick={() => setView('settings')}
               aria-label="Einstellungen"
@@ -196,52 +208,43 @@ export default function App() {
           )}
         </header>
 
+        {view === 'home' && (
+          <Dashboard
+            todayTotals={todayTotals}
+            doneToday={doneToday}
+            streak={streak}
+            onOpenFlashcards={() => setView('books')}
+            onOpenQuiz={() => setView('quiz')}
+            onOpenExplorer={() => openRootExplorer()}
+          />
+        )}
+
         {view === 'books' && (
           <>
-            <h1 style={{ fontFamily: 'Fraunces, serif', fontSize: 24, fontWeight: 600, margin: '0 0 0.9rem' }}>
-              {greeting}
-            </h1>
-            <div style={{ ...card, padding: '1rem 1.25rem', display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: '1.5rem' }}>
-              {todayTotals.due > 0 ? (
-                <>
-                  <span style={{ fontFamily: 'Fraunces, serif', fontSize: 32, fontWeight: 600, color: C.primary }}>
-                    {todayTotals.due}
-                  </span>
-                  <span style={{ fontSize: 14 }}>Karten heute fällig</span>
-                  {todayTotals.fresh > 0 && (
-                    <span style={{ fontSize: 13, color: C.textSoft }}>· {todayTotals.fresh} neu</span>
-                  )}
-                </>
-              ) : (
-                <span style={{ fontSize: 14, color: C.textSoft }}>
-                  Alles gelernt für heute{todayTotals.fresh > 0 ? ` · ${todayTotals.fresh} neue Karten warten` : ''}
-                </span>
-              )}
-            </div>
+            <button onClick={() => setView('home')} style={{ ...backBtn, marginBottom: '1rem' }}>
+              ← Zurück
+            </button>
             <div style={{ fontSize: 12.5, fontWeight: 500, color: C.textSoft, marginBottom: '0.6rem' }}>Bücher</div>
             <BookList
               tree={tree}
               progressMap={progressMap}
               onSelectBook={(bookId) => { setSelectedBookId(bookId); setView('bookDetail'); }}
             />
-            {/* Prototyp — vier Demo-Wurzeln (ك ت ب, د ر س, ع م ل, س ك ن). */}
-            <div style={{ textAlign: 'center', marginTop: '1.25rem' }}>
-              <button
-                onClick={() => openRootExplorer()}
-                style={{
-                  background: 'none', border: 'none', color: C.gold, cursor: 'pointer',
-                  fontFamily: 'inherit', fontSize: 13, fontWeight: 500,
-                }}
-              >
-                Wurzel-Explorer (Beta) →
-              </button>
-            </div>
           </>
+        )}
+
+        {view === 'quiz' && (
+          <QuizSession
+            allItems={allItems}
+            progressMap={progressMap}
+            onExit={() => setView('home')}
+            onGoFlashcards={() => setView('books')}
+          />
         )}
 
         {view === 'settings' && (
           <>
-            <button onClick={() => setView('books')} style={{ ...backBtn, marginBottom: '1rem' }}>
+            <button onClick={() => setView('home')} style={{ ...backBtn, marginBottom: '1rem' }}>
               ← Zurück
             </button>
             <div style={{ ...card, padding: '1.25rem 1.5rem' }}>

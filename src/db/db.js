@@ -84,6 +84,26 @@ export async function reviewsToday() {
   return db.reviews.where('reviewedAt').aboveOrEqual(start).count();
 }
 
+// Lerntage in Folge, rückwärts ab heute gezählt. Tagesgrenzen in LOKALER
+// Zeit (nicht UTC/ISO — sonst bricht ein Abend-Review die Serie über die
+// UTC-Mitternacht). Hat heute noch kein Review stattgefunden, zählt die
+// Serie ab gestern weiter — sie reißt erst, wenn ein ganzer Tag fehlt.
+export async function currentStreak() {
+  // Index-only walk over reviewedAt keys — no row hydration.
+  const keys = await db.reviews.orderBy('reviewedAt').keys();
+  if (!keys.length) return 0;
+  const dayKey = (d) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+  const days = new Set(keys.map((k) => dayKey(new Date(k))));
+  const cursor = new Date();
+  if (!days.has(dayKey(cursor))) cursor.setDate(cursor.getDate() - 1);
+  let streak = 0;
+  while (days.has(dayKey(cursor))) {
+    streak += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return streak;
+}
+
 // --- settings ---
 export async function getSetting(key, fallback) {
   const row = await db.settings.get(key);

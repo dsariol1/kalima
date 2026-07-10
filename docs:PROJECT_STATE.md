@@ -122,22 +122,64 @@ Quiz-Fortschritt (Session-State), kein Audio.
 - Einstellungen: Ziel-Behaltensrate (70–97 %, Default 90 %) und neue Karten
   pro Sitzung (1–50, Default 15, gilt getrennt pro Richtung).
 
-## UI-Struktur (Dashboard-Startseite + zweistufige Navigation)
-Landing Page ist ein Dashboard: Begrüßung (zeitbasiert: Morgen/Tag/Abend),
-Statistik-Karte mit heute fälligen/neuen Karten gesamt (zählt via
-countDueFresh über alle Bücher, keine eigene Zähllogik), darunter BookList
-(nur Bücher mit Gesamtzahlen > 0), darunter Link zum Wurzel-Explorer. Klick
-auf ein Buch öffnet BookDetail (Kapitelliste + "Ganzes Buch üben" +
+## UI-Struktur (Dashboard-Startseite mit Lernwerkzeugen)
+Landing Page ist src/components/Dashboard.jsx, eigenständige Komponente
+(vorher inline in App.jsx). Begrüßung (zeitbasiert: Morgen/Tag/Abend),
+darunter eine Stats-Karte mit **Tagesziel-Ring** (SVG-Fortschrittsring:
+heute erledigte Reviews vs. erledigt+fällig, via `reviewsToday()`) und
+**Streak-Badge** (Flammen-Icon + Lerntage in Folge, via `currentStreak()`
+in db.js — Index-only-Walk über `reviews.reviewedAt`, lokale Tagesgrenzen,
+Serie überlebt bis zum ersten Review des Tages, reisst erst bei einem ganz
+ausgelassenen Tag). Darunter "Lernwerkzeuge": datengetriebene ToolCard-Liste,
+aktuell **Karteikarten** (führt zur bestehenden BookList → BookDetail →
+ReviewSession-Kette, mit fällig-Badge) und **Quiz** (neu, siehe unten).
+Struktur ist bewusst als Liste angelegt, damit künftige Lernwerkzeuge nur
+ein weiterer Array-Eintrag sind, kein neues Layout. Wurzel-Explorer bleibt
+bewusst kein Tool-Card, sondern dezenter Gold-Textlink darunter (Beta,
+nur 4 Wurzeln).
+
+Klick auf ein Buch öffnet BookDetail (Kapitelliste + "Ganzes Buch üben" +
 Add-Buttons). Von dort: Review-Session, Add-Word, Bulk-Add — alle
 Rücksprünge führen kontextgerecht zurück zu BookDetail, nicht bis zur
-Landing Page durch.
+Startseite durch.
 
-Einstellungen + Backup/Export liegen hinter einem Zahnrad-Icon im Header
-(nur auf der Dashboard-Ansicht sichtbar) in einer eigenen 'settings'-Ansicht
-(App.jsx state machine: 'books' -> 'settings' oder 'bookDetail' ->
-'review'/'add'/'bulkAdd'). Der Wurzel-Explorer ist keine eigene View,
-sondern ein Overlay-State (`explorer`), unabhängig von der aktuellen View
-öffen-/schliessbar.
+State machine (App.jsx) jetzt: `'home'` (Dashboard, initial) -> `'books'`
+(Bücherliste, eigene View mit Zurück-Button statt Teil von 'home') ->
+`'bookDetail'` -> `'review'`/`'add'`/`'bulkAdd'`; `'home'` -> `'quiz'`
+(neu); `'home'` -> `'settings'`. Einstellungen + Backup/Export liegen
+hinter dem Zahnrad-Icon im Header (nur auf `'home'` sichtbar), Rücksprung
+von Settings geht auf `'home'`. Der Wurzel-Explorer bleibt kein eigener
+View-State, sondern ein Overlay-State (`explorer`), unabhängig von der
+aktuellen View öffen-/schliessbar (auch über einer laufenden
+ReviewSession, die dabei gemountet bleibt).
+
+## Quiz (src/components/QuizSession.jsx)
+Zweites Lernwerkzeug neben Karteikarten, Multiple-Choice statt Spaced
+Repetition. Fragt **nur bereits gelernte Wörter** ab — Pool ist gefiltert
+über das bestehende Freischalt-Gating `isUnlocked('production', …)` aus
+src/srs/cards.js (Recognition-Karte mindestens einmal bewertet). Quiz ist
+Wiederholung, kein Erstkontakt, und rührt **keine FSRS-Daten an**: kein
+`saveProgress`, kein `logReview`, kein db.js-Import — Score lebt nur in der
+Session, Streak/Tagesziel-Ring bleiben ausschliesslich karteikartengetrieben
+(im Code kommentiert, damit das nicht versehentlich vermischt wird).
+
+Runde: bis zu 10 Fragen ohne Wiederholung innerhalb der Runde, Richtung pro
+Frage zufällig 50/50 (Arabisch→Deutsch / Deutsch→Arabisch, mit Harakat,
+kein Toggle — der Harakat-Header-Toggle bleibt Review-exklusiv). Vier
+Antwortoptionen, drei Distraktoren gestuft gesucht (gleiches Buch + gleiche
+Wortart → gleiches Buch → Rest) und auf den ANTWORTTEXT dedupliziert (nicht
+auf die Vokabel-ID), damit Synonyme aus verschiedenen Büchern nie als zwei
+identisch lautende Optionen erscheinen. Unter 4 gelernten Wörtern zeigt das
+Quiz einen Empty State mit Erklärung + Button zu den Karteikarten statt
+leer/kaputt zu wirken. Endscreen mit Score + gestufter deutscher
+Rückmeldung, "Nochmal" baut eine neue Runde.
+
+UI-Shell (Options-Grid, Score-Header, primarySoft/dangerSoft-Feedback-
+Farben) orientiert sich am bestehenden PatternQuiz in RootExplorer.jsx,
+ist aber unabhängiger Code — PatternQuiz bleibt wurzel-/muster-spezifisch
+und für allgemeinen Wortschatz nicht direkt wiederverwendbar (braucht
+segments/pattern/rootMeaning-Felder, die normale Vokabeleinträge nicht
+haben).
 
 Harakat-Toggle (Diakritika an/aus) ist nur während einer laufenden
 Review-Session sichtbar, nicht auf den anderen Screens.
@@ -156,8 +198,12 @@ gemountet wird) — bleibt darum über mehrere Production-Karten einer Sitzung
 offen statt bei jeder Karte neu aufklappen zu müssen. Default: eingeklappt
 (stört mobile Nutzer mit nativer Tastatur nicht).
 
-Branding: "Kalima+" (Logo public/KalimaLogo.png, Icon + Wortmarke in einem
-Bild integriert).
+Branding: "Kalima+" — Header zeigt seit dem Dashboard-Redesign eine
+**Text-Wortmarke** statt des PNG-Logos: "Kalima" in Fraunces (dieselbe
+Display-Schrift wie die Begrüssung), fett (700), plus goldenes "+"
+(`C.gold`) als Markenzeichen. Ersetzt den früheren `mixBlendMode: multiply`-
+Hack. public/KalimaLogo.png liegt weiterhin ungenutzt im Repo (Favicon
+unberührt, referenziert die PNG nicht).
 
 ## Visuelles Design ("Frisch-modern" Redesign)
 Palette komplett getauscht: von warmem Pergament/Hairline-Look auf helles
@@ -180,7 +226,9 @@ kein CSS-Framework.
 - Quran-80-Buch: Etappe 1+2 von vermutlich ~40 Kapiteln aus der Quelle.
 - Wurzel-Explorer: nur 4 von potenziell vielen Wurzeln ausgearbeitet;
   Erweiterung auf weitere Wurzeln aus dem bestehenden Wortschatz denkbar.
-- Logo-Hintergrund: geprüft, aktuell integriert via mix-blend-mode.
+- Weitere Lernwerkzeuge fürs Dashboard denkbar (Struktur ist absichtlich
+  als erweiterbare Liste angelegt, siehe Dashboard.jsx) — z.B. Hörverstehen,
+  Tippübung ohne Multiple-Choice, o.ä. Noch keine konkreten Pläne.
 - Kein UI zum Umbenennen/Neuordnen von Kapiteln durch den Nutzer selbst
   (aktuell nur über Code-Änderungen durch Claude) — bewusst nicht gebaut,
   da seltene Aktion; Aufwand/Nutzen wurde mit Nutzer besprochen.
