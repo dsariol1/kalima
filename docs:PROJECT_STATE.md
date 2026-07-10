@@ -259,7 +259,7 @@ Kein Backend, kein Build-Server außer lokalem `npm run dev`.
   nur in die lokale Dexie-Datenbank.
 
 ## Letzter Commit
-6896873 feat: Root Explorer als Overlay, Wörter lernen, Wurzel-Wort-Index
+d0af3cf feat: Dashboard-Startseite mit Lernwerkzeugen, Quiz, Streak/Tagesziel-Ring
 
 Working tree: clean (gepusht auf origin/main, Vercel hat automatisch
 deployt).
