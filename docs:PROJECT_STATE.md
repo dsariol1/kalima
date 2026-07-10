@@ -187,9 +187,14 @@ kein CSS-Framework.
 - Kein automatischer Datei-Sync (nur manueller JSON-Export/Import) —
   File System Access API (Chrome/Edge-only) wäre ein Weg, wurde noch nicht
   umgesetzt.
-- Eigene Domain/Deployment: noch nicht umgesetzt, Optionen (Vercel/Netlify/
-  GitHub Pages/eigener Server) mit Nutzer besprochen — App ist als reine SPA
-  ohne Backend auf jedem Static-Hosting lauffähig.
+- Eigene Domain/Deployment: **erledigt.** Repo liegt auf GitHub
+  (github.com/dsariol1/kalima, Remote `origin`, Branch `main`). Deployment
+  über Vercel (Projekt "kalima", Team/Scope "sariol"), Auto-Deploy bei jedem
+  Push auf `main`. Live unter `kalima.sariol.ch` (Subdomain, DNS-CNAME bei
+  sariol.ch auf projekt-spezifisches Vercel-Ziel `bc2c428130a830fe.vercel-dns-017.com`
+  gesetzt, Status "Valid Configuration"). Vercel-Fallback-URL:
+  kalima-plus.vercel.app. Kein Backend nötig (reine SPA, Dexie/IndexedDB
+  läuft clientseitig im Browser des Nutzers).
 
 ## Tech-Stack
 React 19, Vite, Dexie (IndexedDB), ts-fsrs v5, lucide-react (Icons).
@@ -206,8 +211,7 @@ Kein Backend, kein Build-Server außer lokalem `npm run dev`.
   nur in die lokale Dexie-Datenbank.
 
 ## Letzter Commit
-1f092ab feat: expand ABY Book 1 to 188 words with roots and example sentences
+6896873 feat: Root Explorer als Overlay, Wörter lernen, Wurzel-Wort-Index
 
-Unstaged Änderungen (Wurzel-Explorer V2+V3, siehe Feature-Abschnitt oben):
-App.jsx, BookList.jsx, Flashcard.jsx, RootExplorer.jsx, data/books.js,
-data/rootFamilies.js.
+Working tree: clean (gepusht auf origin/main, Vercel hat automatisch
+deployt).
