@@ -12,9 +12,17 @@ export const DEFAULT_RETENTION = 0.9;
 let retention = DEFAULT_RETENTION;
 let scheduler = buildScheduler(retention);
 
-// enable_fuzz spreads due dates so reviews don't clump.
+// enable_fuzz spreads due dates so reviews don't clump. learning_steps /
+// relearning_steps control the "Nochmal"-Intervall: ts-fsrs defaults to
+// ['1m', '10m'] / ['10m'], das erste Wiederholen fühlte sich zu knapp an —
+// auf 2 Minuten verlängert.
 function buildScheduler(r) {
-  return fsrs(generatorParameters({ request_retention: r, enable_fuzz: true }));
+  return fsrs(generatorParameters({
+    request_retention: r,
+    enable_fuzz: true,
+    learning_steps: ['2m', '10m'],
+    relearning_steps: ['2m'],
+  }));
 }
 
 // Rebuilds the internal ts-fsrs instance for a new target retention. Existing
