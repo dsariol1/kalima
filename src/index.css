@@ -4,8 +4,75 @@
 
 html, body, #root { margin: 0; padding: 0; }
 
+/* Farb-Tokens als CSS-Variablen, damit theme.js (C.*) sie referenzieren
+   kann und ein Theme-Wechsel ohne React-Re-Render sofort greift — der
+   Browser löst var() bei jedem Paint neu auf. Reihenfolge der Kaskade:
+   :root (hell, Default) -> prefers-color-scheme (System) -> [data-theme]
+   (expliziter Nutzer-Override, überschreibt beides). */
+:root {
+  --text: #1B2A26;
+  --textSoft: #54655F;
+  --bg: #F6F8F7;
+  --surface: #FFFFFF;
+  --surfaceMuted: #EEF2F0;
+  --primary: #0F766E;
+  --primarySoft: #E6F4F1;
+  --gold: #A16207;
+  --goldSoft: #F5EBD8;
+  --danger: #B42318;
+  --dangerSoft: #FDEEEA;
+  --border: #E3E8E5;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #E8EEEB;
+    --textSoft: #9BAAA4;
+    --bg: #10201C;
+    --surface: #16302A;
+    --surfaceMuted: #1C3831;
+    --primary: #3BB4A6;
+    --primarySoft: #173A34;
+    --gold: #D9A441;
+    --goldSoft: #2A2417;
+    --danger: #F2555A;
+    --dangerSoft: #3A1B1A;
+    --border: #264640;
+  }
+}
+
+:root[data-theme="dark"] {
+  --text: #E8EEEB;
+  --textSoft: #9BAAA4;
+  --bg: #10201C;
+  --surface: #16302A;
+  --surfaceMuted: #1C3831;
+  --primary: #3BB4A6;
+  --primarySoft: #173A34;
+  --gold: #D9A441;
+  --goldSoft: #2A2417;
+  --danger: #F2555A;
+  --dangerSoft: #3A1B1A;
+  --border: #264640;
+}
+
+:root[data-theme="light"] {
+  --text: #1B2A26;
+  --textSoft: #54655F;
+  --bg: #F6F8F7;
+  --surface: #FFFFFF;
+  --surfaceMuted: #EEF2F0;
+  --primary: #0F766E;
+  --primarySoft: #E6F4F1;
+  --gold: #A16207;
+  --goldSoft: #F5EBD8;
+  --danger: #B42318;
+  --dangerSoft: #FDEEEA;
+  --border: #E3E8E5;
+}
+
 body {
-  background-color: #F6F8F7;
+  background-color: var(--bg);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -13,7 +80,7 @@ body {
 button:focus-visible,
 input:focus-visible,
 select:focus-visible {
-  outline: 2px solid #0F766E;
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 

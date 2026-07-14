@@ -38,22 +38,36 @@ export default function App() {
   const [newPerSession, setNewPerSession] = useState(DEFAULT_NEW_PER_SESSION);
   const [doneToday, setDoneToday] = useState(0);
   const [streak, setStreak] = useState(0);
+  // 'system' | 'light' | 'dark'. 'system' sets no override — the CSS
+  // prefers-color-scheme media query in index.css decides. Applied to
+  // <html data-theme> so it wins the cascade over the media query.
+  const [theme, setThemeState] = useState('system');
 
   useEffect(() => {
     (async () => {
-      const [p, c, r, n] = await Promise.all([
+      const [p, c, r, n, t] = await Promise.all([
         loadProgress(),
         loadCustomVocab(),
         getSetting('retention', DEFAULT_RETENTION),
         getSetting('newPerSession', DEFAULT_NEW_PER_SESSION),
+        getSetting('theme', 'system'),
       ]);
       setProgressMap(p);
       setCustomVocab(c);
       setRetentionState(r);
       setNewPerSession(n);
       configureRetention(r);
+      setThemeState(t);
     })();
   }, []);
+
+  useEffect(() => {
+    if (theme === 'system') {
+      delete document.documentElement.dataset.theme;
+    } else {
+      document.documentElement.dataset.theme = theme;
+    }
+  }, [theme]);
 
   const tree = useMemo(() => buildBookTree(customVocab), [customVocab]);
 
@@ -160,6 +174,11 @@ export default function App() {
     setSetting('newPerSession', n);
   }, []);
 
+  const handleThemeChange = useCallback((t) => {
+    setThemeState(t);
+    setSetting('theme', t);
+  }, []);
+
   if (progressMap === null) {
     return <div style={{ fontFamily: 'Inter, sans-serif', color: C.textSoft, padding: '3rem', textAlign: 'center' }}>Lade …</div>;
   }
@@ -254,8 +273,10 @@ export default function App() {
               <Settings
                 retention={retention}
                 newPerSession={newPerSession}
+                theme={theme}
                 onRetentionChange={handleRetentionChange}
                 onNewPerSessionChange={handleNewPerSessionChange}
+                onThemeChange={handleThemeChange}
               />
               <BackupControls onExport={handleExport} onImport={handleImport} />
             </div>

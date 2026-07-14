@@ -8,15 +8,42 @@ const NEW_PER_SESSION_MAX = 50;
 const label = { display: 'block', fontSize: 12.5, color: C.text, marginBottom: 10 };
 const rowValue = { color: C.textSoft, fontWeight: 400 };
 
+const THEME_OPTIONS = [
+  { value: 'system', label: 'System' },
+  { value: 'light', label: 'Hell' },
+  { value: 'dark', label: 'Dunkel' },
+];
+
 // User-tunable FSRS knobs. Persisted via setSetting in db.js; retention also
 // needs to reach the scheduler itself (see App.jsx's onRetentionChange).
-export default function Settings({ retention, newPerSession, onRetentionChange, onNewPerSessionChange }) {
+export default function Settings({ retention, newPerSession, theme, onRetentionChange, onNewPerSessionChange, onThemeChange }) {
   const retentionPct = Math.round(retention * 100);
 
   return (
     // Leads inside the settings card (App.jsx renders the heading), so no
     // top divider of its own.
     <div style={{ paddingTop: '0.5rem' }}>
+      <span style={label}>Darstellung</span>
+      <div style={{ display: 'flex', gap: 6, marginBottom: 18 }}>
+        {THEME_OPTIONS.map((opt) => {
+          const active = theme === opt.value;
+          return (
+            <button
+              key={opt.value}
+              onClick={() => onThemeChange(opt.value)}
+              style={{
+                fontFamily: 'inherit', fontSize: 12.5, fontWeight: 500,
+                background: active ? C.primarySoft : 'transparent',
+                border: `1px solid ${active ? C.primary : C.border}`, borderRadius: 999,
+                padding: '5px 14px', color: active ? C.primary : C.textSoft, cursor: 'pointer',
+              }}
+            >
+              {opt.label}
+            </button>
+          );
+        })}
+      </div>
+
       <label style={label}>
         Ziel-Behaltensrate <span style={rowValue}>· {retentionPct}%</span>
         <input

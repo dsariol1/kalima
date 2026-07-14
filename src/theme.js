@@ -1,20 +1,27 @@
 // Shared visual tokens. A fresh, modern learning-app palette — off-white
 // surfaces, a saturated green-teal primary, and warm gold accents that keep
 // the Arabic identity alongside the Amiri script.
+//
+// Values are CSS custom-property references, not hex literals — the actual
+// colors live in index.css (:root, prefers-color-scheme, [data-theme]).
+// That means dark mode needs no React re-render: the browser resolves var()
+// at paint time, so every inline style built from C (here and in the
+// card/button/input primitives below) repaints itself the moment
+// documentElement's data-theme attribute changes (see App.jsx).
 export const C = {
-  text: '#1B2A26',
-  textSoft: '#54655F',
-  bg: '#F6F8F7',
-  surface: '#FFFFFF',
-  surfaceMuted: '#EEF2F0',
-  primary: '#0F766E',
-  primarySoft: '#E6F4F1',
-  gold: '#A16207',
-  goldSoft: '#F5EBD8',
-  danger: '#B42318',
-  dangerSoft: '#FDEEEA',
-  success: '#0F766E', // alias of primary — one green for "correct" everywhere
-  border: '#E3E8E5',
+  text: 'var(--text)',
+  textSoft: 'var(--textSoft)',
+  bg: 'var(--bg)',
+  surface: 'var(--surface)',
+  surfaceMuted: 'var(--surfaceMuted)',
+  primary: 'var(--primary)',
+  primarySoft: 'var(--primarySoft)',
+  gold: 'var(--gold)',
+  goldSoft: 'var(--goldSoft)',
+  danger: 'var(--danger)',
+  dangerSoft: 'var(--dangerSoft)',
+  success: 'var(--primary)', // alias of primary — one green for "correct" everywhere
+  border: 'var(--border)',
 };
 
 export const SHADOW = {
