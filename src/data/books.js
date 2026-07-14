@@ -10,9 +10,9 @@ import { quran80 } from './vocab/quran80.js';
 export const BOOK_META = [
   {
     id: 'aby-1',
-    title: 'العربية بين يديك',
-    subtitle: 'الكتاب الأول',
-    titleDe: 'Al-ʿArabiyya bayna Yadayk — Band 1',
+    title: 'العربية اليومية للمبتدئين',
+    subtitle: 'مفردات حسب الموضوع',
+    titleDe: 'Alltagsarabisch — Einsteiger',
     descDe: 'Grundwortschatz für Anfänger, nach Themen geordnet.',
     level: 'A1',
     accent: '#0F766E',

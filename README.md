@@ -1,8 +1,8 @@
 # فُصحى — Wortschatz
 
 Ein Vokabeltrainer für Hocharabisch (Fusha), gebaut auf **Spaced Repetition** mit
-dem produktiven FSRS-Algorithmus. Fokus: Quran-Kernwortschatz und Lehrbücher für
-Nicht-Muttersprachler, beginnend mit *Al-ʿArabiyya bayna Yadayk, Band 1*.
+dem produktiven FSRS-Algorithmus. Fokus: Quran-Kernwortschatz und ein eigener
+Grundwortschatz für Einsteiger, beginnend mit *Alltagsarabisch — Einsteiger*.
 
 ## Was drin ist
 

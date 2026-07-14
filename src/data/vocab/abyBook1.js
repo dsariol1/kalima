@@ -1,6 +1,6 @@
-// Starter vocabulary aligned with the thematic progression of
-// "Al-ʿArabiyya bayna Yadayk", Book 1 (greetings, family, home, daily life,
-// food, prayer, study, work, plus grammatical reference chapters).
+// Kalima+'s own beginner vocabulary set ("Alltagsarabisch — Einsteiger"),
+// organized by everyday theme (greetings, family, home, daily life, food,
+// prayer, study, work, plus grammatical reference chapters).
 // Chapter numbers are assigned at render time in books.js, not stored here.
 // Chapters named exactly "Pronomen", "Adverbien" or "Präpositionen" are
 // sorted unnumbered to the end by books.js (grammatical reference lists).

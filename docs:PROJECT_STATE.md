@@ -23,7 +23,7 @@ Bewertung: zwei Buttons statt der üblichen vier FSRS-Stufen — "Nochmal"
 Intervall). Hard/Easy sind ungenutzt.
 
 ## Bücher (Stand jetzt)
-1. Al-ʿArabiyya bayna Yadayk — Band 1 (aby-1): **188 Wörter, 11 Kapitel**
+1. Alltagsarabisch — Einsteiger (aby-1): **188 Wörter, 11 Kapitel**
    (8 nummerierte Themenkapitel: Begrüssung & Vorstellung, Familie, Das Haus,
    Das tägliche Leben, Essen & Trinken, Das Gebet, Das Studium & Lernen,
    Die Arbeit & der Beruf; 3 unnummerierte Grammatik-Kapitel am Ende:
