@@ -52,12 +52,13 @@ export default function App() {
   // Kompletter Zustand aus Dexie. Wird beim Mount geladen und nach einem Sync,
   // der Remote-Änderungen gezogen hat, erneut ausgeführt (onSynced).
   const loadAll = useCallback(async () => {
-    const [p, c, r, n, t] = await Promise.all([
+    const [p, c, r, n, t, h] = await Promise.all([
       loadProgress(),
       loadCustomVocab(),
       getSetting('retention', DEFAULT_RETENTION),
       getSetting('newPerSession', DEFAULT_NEW_PER_SESSION),
       getSetting('theme', 'system'),
+      getSetting('harakat', true),
     ]);
     setProgressMap(p);
     setCustomVocab(c);
@@ -65,6 +66,7 @@ export default function App() {
     setNewPerSession(n);
     configureRetention(r);
     setThemeState(t);
+    setHarakat(h);
   }, []);
 
   useEffect(() => { loadAll(); }, [loadAll]);
@@ -193,6 +195,13 @@ export default function App() {
     setSetting('theme', t);
   }, []);
 
+  const handleHarakatChange = useCallback(() => {
+    setHarakat((h) => {
+      setSetting('harakat', !h);
+      return !h;
+    });
+  }, []);
+
   // Pflicht-Gate: ohne Anmeldung nichts als der Login-Screen. Steht bewusst vor
   // dem Lade-Guard — alles darunter läuft nur authentifiziert (keine dualen
   // Gast-/Konto-Pfade).
@@ -222,12 +231,13 @@ export default function App() {
           {/* Harakat toggle only matters while a word is being quizzed. */}
           {view === 'review' && (
             <button
-              onClick={() => setHarakat((h) => !h)}
+              onClick={handleHarakatChange}
+              aria-pressed={harakat}
               style={{
                 fontFamily: 'inherit', fontSize: FONT.xs, fontWeight: 500,
                 background: harakat ? C.primarySoft : 'transparent',
-                border: `1px solid ${harakat ? C.primary : C.border}`, borderRadius: 999, padding: '4px 10px',
-                color: harakat ? C.primary : C.textSoft, cursor: 'pointer',
+                border: `1px solid ${harakat ? C.primary : C.border}`, borderRadius: 999, padding: '6px 12px',
+                color: harakat ? C.primary : C.textSoft, cursor: 'pointer', minHeight: 32,
               }}
             >
               Harakat {harakat ? 'an' : 'aus'}
