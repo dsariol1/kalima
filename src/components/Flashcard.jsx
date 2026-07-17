@@ -22,7 +22,7 @@ const VERDICT = {
 
 function ArabicWord({ card, harakat }) {
   return (
-    <div dir="rtl" style={{ fontFamily: 'Amiri, serif', fontSize: FONT.arXl, lineHeight: 1.5, paddingTop: 6 }}>
+    <div dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: FONT.arXl, lineHeight: 1.5, paddingTop: 6 }}>
       {harakat ? card.ar : card.bare}
     </div>
   );
@@ -34,7 +34,7 @@ function RootFamily({ card, family, onExploreRoot }) {
   const canExplore = onExploreRoot && ROOT_EXPLORER_DEMO_ROOTS.has(rootKey);
   return (
     <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 12 }}>
-      <div dir="rtl" style={{ fontFamily: 'Amiri, serif', fontSize: FONT.arMd, letterSpacing: 3, marginBottom: 2 }}>
+      <div dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: FONT.arMd, letterSpacing: 3, marginBottom: 2 }}>
         {card.root.join(' ')}
       </div>
       <div style={{ fontSize: FONT.sm, color: C.textSoft, marginBottom: SPACE.sm }}>
@@ -59,7 +59,7 @@ function RootFamily({ card, family, onExploreRoot }) {
                 display: 'inline-flex', gap: 6, alignItems: 'center',
               }}
             >
-              <span dir="rtl" style={{ fontFamily: 'Amiri, serif', fontSize: FONT.arXs }}>{f.ar}</span>
+              <span dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: FONT.arXs }}>{f.ar}</span>
               <span style={{ color: C.textSoft }}>— {f.de}</span>
             </span>
           ))}
@@ -73,7 +73,7 @@ function Example({ card }) {
   if (!card.example) return null;
   return (
     <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 14, paddingTop: 12 }}>
-      <div dir="rtl" style={{ fontFamily: 'Amiri, serif', fontSize: FONT.arSm, marginBottom: SPACE.xs }}>{card.example.ar}</div>
+      <div dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: FONT.arSm, marginBottom: SPACE.xs }}>{card.example.ar}</div>
       <div style={{ fontSize: FONT.sm, color: C.textSoft, fontStyle: 'italic' }}>„{card.example.de}"</div>
     </div>
   );
@@ -133,6 +133,7 @@ function ProductionCard({ card, harakat, revealed, onReveal, family, showKeyboar
           ref={inputRef}
           autoFocus
           dir="rtl"
+          lang="ar"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}

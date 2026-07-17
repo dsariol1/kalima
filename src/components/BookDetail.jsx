@@ -18,8 +18,8 @@ export default function BookDetail({ book, progressMap, onStart, onAddWord, onBu
       <div style={{ ...card, padding: '1rem 1.25rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
           <div>
-            <div dir="rtl" style={{ fontFamily: 'Amiri, serif', fontSize: FONT.arMd, lineHeight: 1.25 }}>
-              {book.title} <span style={{ fontSize: FONT.arXs, color: C.textSoft }}>· {book.subtitle}</span>
+            <div dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: FONT.arMd, lineHeight: 1.25 }}>
+              {book.title} <span lang="de" style={{ fontSize: FONT.arXs, color: C.textSoft }}>· {book.subtitle}</span>
             </div>
             <div style={{ fontSize: FONT.sm, color: C.textSoft, marginTop: 2 }}>{book.titleDe}</div>
             <div style={{ fontSize: FONT.sm, color: C.textSoft, marginTop: 4 }}>{book.descDe}</div>

@@ -53,7 +53,7 @@ export default function AddWord({ bookId, units, exitLabel, onSave, onCancel }) 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div>
             <span style={label}>Arabisch (mit Harakat)</span>
-            <input dir="rtl" value={ar} onChange={(e) => setAr(e.target.value)}
+            <input dir="rtl" lang="ar" value={ar} onChange={(e) => setAr(e.target.value)}
               placeholder="مَثَلًا: دَرْس" style={{ ...inputStyle, fontFamily: 'Amiri, serif', fontSize: FONT.arMd }} />
           </div>
           <div>
@@ -74,7 +74,7 @@ export default function AddWord({ bookId, units, exitLabel, onSave, onCancel }) 
           <div style={{ display: 'flex', gap: 10 }}>
             <div style={{ flex: 1 }}>
               <span style={label}>Wurzel (optional)</span>
-              <input dir="rtl" value={rootStr} onChange={(e) => setRootStr(e.target.value)}
+              <input dir="rtl" lang="ar" value={rootStr} onChange={(e) => setRootStr(e.target.value)}
                 placeholder="د ر س" style={{ ...inputStyle, fontFamily: 'Amiri, serif' }} />
             </div>
             <div style={{ flex: 1 }}>

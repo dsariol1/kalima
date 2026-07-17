@@ -19,6 +19,7 @@ export default function GradeButtons({ card, onGrade }) {
         <button
           key={r.key}
           onClick={() => onGrade(r.grade)}
+          aria-label={`${r.label}, nächste Wiederholung in ${formatInterval(new Date(previews[r.key]).getTime() - now)}`}
           style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
             border: 'none', borderRadius: 12,

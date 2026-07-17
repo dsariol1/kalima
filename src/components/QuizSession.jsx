@@ -156,7 +156,7 @@ export default function QuizSession({ allItems, progressMap, onExit, onGoFlashca
 
         <div style={{ textAlign: 'center', marginBottom: 14 }}>
           {isAr2De ? (
-            <div dir="rtl" style={{ fontFamily: 'Amiri, serif', fontSize: FONT.arLg, lineHeight: 1.4, color: C.text }}>
+            <div dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: FONT.arLg, lineHeight: 1.4, color: C.text }}>
               {target.ar}
             </div>
           ) : (
@@ -190,7 +190,7 @@ export default function QuizSession({ allItems, progressMap, onExit, onGoFlashca
                 }}
               >
                 {isAr2De ? opt.de : (
-                  <span dir="rtl" style={{ fontFamily: 'Amiri, serif', fontSize: FONT.arSm, lineHeight: 1.3 }}>{opt.ar}</span>
+                  <span dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: FONT.arSm, lineHeight: 1.3 }}>{opt.ar}</span>
                 )}
               </button>
             );
@@ -200,7 +200,7 @@ export default function QuizSession({ allItems, progressMap, onExit, onGoFlashca
         {selected && (
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: FONT.sm, color: C.textSoft, marginBottom: SPACE.sm }}>
-              <span dir="rtl" style={{ fontFamily: 'Amiri, serif', fontSize: FONT.arXs }}>{target.ar}</span> = {target.de}
+              <span dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: FONT.arXs }}>{target.ar}</span> = {target.de}
             </div>
             <button onClick={next} style={primaryBtn}>
               {isLast ? 'Ergebnis anzeigen' : 'Nächste Frage'}

@@ -15,8 +15,12 @@ function GoalRing({ done, goal }) {
   const circumference = 2 * Math.PI * r;
   const pct = goal > 0 ? done / goal : done > 0 ? 1 : 0;
   return (
-    <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
-      <svg width={size} height={size}>
+    <div
+      role="img"
+      aria-label={goal > 0 ? `${done} von ${goal} Karten heute gelernt` : `${done} Karten heute gelernt`}
+      style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}
+    >
+      <svg width={size} height={size} aria-hidden="true">
         <circle cx={cx} cy={cx} r={r} fill="none" stroke={C.surfaceMuted} strokeWidth={6} />
         <circle
           cx={cx} cy={cx} r={r} fill="none" stroke={C.primary} strokeWidth={6}
@@ -59,6 +63,7 @@ function ToolCard({ tool }) {
   return (
     <button
       onClick={tool.onOpen}
+      aria-label={`${tool.name}${tool.badge ? `, ${tool.badge}` : ''}. ${tool.desc}`}
       style={{
         ...card, display: 'flex', alignItems: 'center', gap: 14, width: '100%',
         textAlign: 'left', fontFamily: 'inherit', padding: '1rem 1.25rem',
