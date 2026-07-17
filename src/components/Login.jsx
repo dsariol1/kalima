@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { login, register, requestPasswordReset } from '../auth/pocketbase.js';
 import { C, card, primaryBtn, inputStyle, fieldLabel, linkBtn, FONT, SPACE } from '../theme.js';
 
@@ -30,6 +31,7 @@ export default function Login() {
   const [mode, setMode] = useState('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
   const [notice, setNotice] = useState(null);
@@ -102,15 +104,29 @@ export default function Login() {
           {mode !== 'reset' && (
             <label style={{ display: 'block', marginBottom: 14 }}>
               <span style={fieldLabel}>Passwort</span>
-              <input
-                type="password"
-                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-                required
-                minLength={8}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={inputStyle}
-              />
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                  required
+                  minLength={8}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  style={{ ...inputStyle, paddingRight: 40 }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((s) => !s)}
+                  aria-label={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
+                  style={{
+                    position: 'absolute', right: 4, top: 0, bottom: 0, width: 36,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'none', border: 'none', color: C.textSoft, cursor: 'pointer',
+                  }}
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
               {mode === 'register' && (
                 <span style={{ ...fieldLabel, fontSize: FONT.xs, display: 'block', marginTop: SPACE.xs }}>
                   Mindestens 8 Zeichen.

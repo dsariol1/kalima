@@ -85,7 +85,11 @@ export default function ReviewSession({ scope, scopeLabel, exitLabel, progressMa
           <Sparkles size={22} color={C.gold} style={{ marginBottom: 10 }} />
           <div style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.lg, marginBottom: SPACE.sm }}>Runde abgeschlossen</div>
           <div style={{ fontSize: FONT.base, color: C.textSoft }}>
-            {stats.reviewed} Karten{stats.again > 0 ? `, ${stats.again}× nochmal geübt` : ''}.
+            {stats.reviewed} Karten geübt
+            {stats.again > 0
+              ? ` · ${stats.reviewed - stats.again} gewusst, ${stats.again}× nochmal`
+              : ' · alle gewusst'}
+            .
           </div>
           <button onClick={onExit} style={{ ...primaryBtn, marginTop: 16 }}>
             Zurück zum Buch

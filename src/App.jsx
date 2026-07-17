@@ -80,8 +80,20 @@ export default function App() {
   useEffect(() => {
     if (theme === 'system') {
       delete document.documentElement.dataset.theme;
+      // Zwei media-gebundene theme-color-Tags in index.html übernehmen wieder.
+      document.querySelectorAll('meta[name="theme-color"][data-override]').forEach((m) => m.remove());
     } else {
       document.documentElement.dataset.theme = theme;
+      // Expliziter Override braucht ein eigenes, medienloses Tag — die
+      // beiden statischen Tags reagieren nur auf prefers-color-scheme.
+      let meta = document.querySelector('meta[name="theme-color"][data-override]');
+      if (!meta) {
+        meta = document.createElement('meta');
+        meta.name = 'theme-color';
+        meta.dataset.override = 'true';
+        document.head.appendChild(meta);
+      }
+      meta.content = theme === 'dark' ? '#10201C' : '#F6F8F7';
     }
   }, [theme]);
 

@@ -1,6 +1,6 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, Volume2, Plus, Minus, CheckCircle2, Sparkles } from 'lucide-react';
-import { C, card, backBtn, linkBtn, primaryBtn, pill } from '../theme.js';
+import { C, card, backBtn, linkBtn, primaryBtn, pill, FONT } from '../theme.js';
 import { BUILTIN_VOCAB, BOOK_META } from '../data/books.js';
 import { ROOT_FAMILIES, ROOT_KEYS, WORD_INDEX, normalizeCitation } from '../data/rootFamilies.js';
 
@@ -497,7 +497,12 @@ export default function RootExplorer({ onBack, initialRootKey, initialCenterAr, 
 
   return (
     <div ref={wrapRef}>
-      <button onClick={onBack} style={{ ...backBtn, marginBottom: '0.9rem' }}><ArrowLeft size={15} /> Zurück</button>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.9rem' }}>
+        <button onClick={onBack} style={backBtn}><ArrowLeft size={15} /> Zurück</button>
+        <div style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.md, fontWeight: 700, color: C.text, lineHeight: 1 }}>
+          Kalima<span style={{ color: C.gold }}>+</span>
+        </div>
+      </div>
 
       {/* Kopfzeile: Wurzel-Pills (nur in der Graph-Ansicht relevant — Muster
           und Quiz arbeiten wurzelübergreifend) + Ansichts-Umschalter. */}

@@ -170,7 +170,7 @@ export default function QuizSession({ allItems, progressMap, onExit, onGoFlashca
           {isAr2De ? 'Was bedeutet das?' : 'Welches Wort passt?'}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8, marginBottom: 14 }}>
           {options.map((opt) => {
             const isCorrect = opt.id === target.id;
             const isPicked = selected && opt.id === selected.id;
@@ -201,8 +201,8 @@ export default function QuizSession({ allItems, progressMap, onExit, onGoFlashca
 
         {selected && (
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: FONT.sm, color: C.textSoft, marginBottom: SPACE.sm }}>
-              <span dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: FONT.arXs }}>{target.ar}</span> = {target.de}
+            <div style={{ fontSize: FONT.base, color: C.text, marginBottom: SPACE.md }}>
+              <span dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: FONT.arSm }}>{target.ar}</span> = {target.de}
             </div>
             <button onClick={next} style={primaryBtn}>
               {isLast ? 'Ergebnis anzeigen' : 'Nächste Frage'}
