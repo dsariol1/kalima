@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
 import { ArrowLeft, BookOpen, Plus, Play, ListPlus } from 'lucide-react';
 import { countDueFresh } from '../srs/cards.js';
-import { C, card, linkBtn, backBtn, pill, FONT, SPACE } from '../theme.js';
+import { C, card, linkBtn, backBtn, FONT, SPACE } from '../theme.js';
+import BookHeader from './BookHeader.jsx';
 
 // One book's chapters and actions — reached from BookList. "Ganzes Buch
 // üben" and each chapter row hand a scope off to ReviewSession via onStart.
@@ -16,16 +17,7 @@ export default function BookDetail({ book, progressMap, onStart, onAddWord, onBu
       </button>
 
       <div style={{ ...card, padding: '1rem 1.25rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
-          <div>
-            <div dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: FONT.arMd, lineHeight: 1.25 }}>
-              {book.title} <span lang="de" style={{ fontSize: FONT.arXs, color: C.textSoft }}>· {book.subtitle}</span>
-            </div>
-            <div style={{ fontSize: FONT.sm, color: C.textSoft, marginTop: 2 }}>{book.titleDe}</div>
-            <div style={{ fontSize: FONT.sm, color: C.textSoft, marginTop: 4 }}>{book.descDe}</div>
-          </div>
-          <span style={pill(book.accent)}>{book.level}</span>
-        </div>
+        <BookHeader book={book} />
 
         <button
           onClick={() => onStart({ bookId: book.id })}

@@ -1,6 +1,7 @@
 import { BookX, ChevronRight } from 'lucide-react';
 import { countDueFresh } from '../srs/cards.js';
-import { C, card, pill, FONT, SPACE } from '../theme.js';
+import { C, card, FONT, SPACE } from '../theme.js';
+import BookHeader from './BookHeader.jsx';
 
 // Landing screen: just the books. Chapter detail and actions live one level
 // deeper in BookDetail, so this stays a single decision (which book), not a
@@ -37,16 +38,7 @@ export default function BookList({ tree, progressMap, onSelectBook }) {
               padding: '1rem 1.25rem', marginBottom: SPACE.md, cursor: 'pointer',
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
-              <div>
-                <div dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: FONT.arMd, lineHeight: 1.25, color: C.text }}>
-                  {book.title} <span lang="de" style={{ fontSize: FONT.arXs, color: C.textSoft }}>· {book.subtitle}</span>
-                </div>
-                <div style={{ fontSize: FONT.sm, color: C.textSoft, marginTop: 2 }}>{book.titleDe}</div>
-                <div style={{ fontSize: FONT.sm, color: C.textSoft, marginTop: 4 }}>{book.descDe}</div>
-              </div>
-              <span style={pill(book.accent)}>{book.level}</span>
-            </div>
+            <BookHeader book={book} />
 
             <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ fontSize: FONT.sm, color: C.textSoft }}>
