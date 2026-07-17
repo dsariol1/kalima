@@ -38,18 +38,19 @@ export default function Settings({
     // top divider of its own.
     <div style={{ paddingTop: '0.5rem' }}>
       <span style={label}>Darstellung</span>
-      <div style={{ display: 'flex', gap: 6, marginBottom: 18 }}>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 18 }}>
         {THEME_OPTIONS.map((opt) => {
           const active = theme === opt.value;
           return (
             <button
               key={opt.value}
               onClick={() => onThemeChange(opt.value)}
+              aria-pressed={active}
               style={{
-                fontFamily: 'inherit', fontSize: FONT.sm, fontWeight: 500,
+                fontFamily: 'inherit', fontSize: FONT.sm, fontWeight: 500, minHeight: 40,
                 background: active ? C.primarySoft : 'transparent',
                 border: `1px solid ${active ? C.primary : C.border}`, borderRadius: 999,
-                padding: '5px 14px', color: active ? C.primary : C.textSoft, cursor: 'pointer',
+                padding: '5px 16px', color: active ? C.primary : C.textSoft, cursor: 'pointer',
               }}
             >
               {opt.label}

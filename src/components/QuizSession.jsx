@@ -186,7 +186,7 @@ export default function QuizSession({ allItems, progressMap, onExit, onGoFlashca
                   padding: '10px 8px', borderRadius: 10, border: `1.5px solid ${border}`,
                   backgroundColor: bg, color, fontFamily: 'inherit', fontSize: FONT.base,
                   cursor: selected ? 'default' : 'pointer', textAlign: 'center',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 40,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 44,
                 }}
               >
                 {isAr2De ? opt.de : (

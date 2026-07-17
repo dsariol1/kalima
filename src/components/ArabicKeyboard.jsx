@@ -16,13 +16,13 @@ const LETTERS = [
 // otherwise be nearly untypable on a laptop.
 export default function ArabicKeyboard({ onKey, onBackspace }) {
   const keyStyle = {
-    fontFamily: 'Amiri, serif', fontSize: FONT.arSm, padding: '8px 0',
-    border: `1px solid ${C.border}`, borderRadius: 8,
+    fontFamily: 'Amiri, serif', fontSize: FONT.arSm, padding: '8px 0', minHeight: 40,
+    border: `1px solid ${C.border}`, borderRadius: 8, touchAction: 'manipulation',
     backgroundColor: C.surface, color: C.text, cursor: 'pointer',
   };
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: 5, marginBottom: 12 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: 8, marginBottom: 12 }}>
       {LETTERS.map((ch) => (
         <button key={ch} type="button" onClick={() => onKey(ch)} style={keyStyle}>
           {ch}

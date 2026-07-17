@@ -66,8 +66,10 @@ export const primaryBtn = {
   borderRadius: 10, padding: '9px 22px', cursor: 'pointer',
 };
 
+// minHeight 44 gibt eine unsichtbare Touch-Fläche (Apple HIG), ohne dass
+// der Text-Link optisch größer wirkt — die Box wächst, nicht die Schrift.
 export const linkBtn = {
-  display: 'inline-flex', alignItems: 'center', gap: 6,
+  display: 'inline-flex', alignItems: 'center', gap: 6, minHeight: 44,
   background: 'none', border: 'none', color: C.gold, cursor: 'pointer',
   fontFamily: 'inherit', fontSize: FONT.sm, fontWeight: 500, padding: 0,
 };
