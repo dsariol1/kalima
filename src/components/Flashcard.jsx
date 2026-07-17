@@ -160,7 +160,7 @@ function ProductionCard({ card, harakat, revealed, onReveal, family, showKeyboar
 
   const verdict = input.trim() ? (correct ? VERDICT.correct : VERDICT.wrong) : null;
   return (
-    <>
+    <div className="fade-in">
       <div style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.xl, marginBottom: SPACE.md }}>{card.de}</div>
       {verdict && (
         <div style={{ fontSize: FONT.base, fontWeight: 600, color: verdict.color, marginBottom: SPACE.md }}>
@@ -173,7 +173,7 @@ function ProductionCard({ card, harakat, revealed, onReveal, family, showKeyboar
         <RootFamily card={card} family={family} onExploreRoot={onExploreRoot} />
         <Example card={card} />
       </div>
-    </>
+    </div>
   );
 }
 
@@ -185,7 +185,7 @@ function RecognitionCard({ card, harakat, revealed, onReveal, family, onExploreR
       {!revealed ? (
         <button onClick={onReveal} style={{ ...primaryBtn, marginTop: 16 }}>Bedeutung zeigen</button>
       ) : (
-        <div style={{ marginTop: 16 }}>
+        <div className="fade-in" style={{ marginTop: 16 }}>
           <div style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.xl, marginBottom: SPACE.md }}>{card.de}</div>
           <RootFamily card={card} family={family} onExploreRoot={onExploreRoot} />
           <Example card={card} />
@@ -202,6 +202,7 @@ export default function Flashcard({ card, direction, harakat, revealed, onReveal
 
   return (
     <div
+      className="card-enter"
       style={{
         ...cardStyle,
         padding: '2rem 1.5rem',

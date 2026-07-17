@@ -23,6 +23,7 @@ function GoalRing({ done, goal }) {
       <svg width={size} height={size} aria-hidden="true">
         <circle cx={cx} cy={cx} r={r} fill="none" stroke={C.surfaceMuted} strokeWidth={6} />
         <circle
+          className="goal-ring-progress"
           cx={cx} cy={cx} r={r} fill="none" stroke={C.primary} strokeWidth={6}
           strokeLinecap="round" strokeDasharray={circumference}
           strokeDashoffset={circumference * (1 - pct)}

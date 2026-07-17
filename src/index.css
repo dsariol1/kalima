@@ -106,4 +106,20 @@ select:focus-visible {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.5; }
   }
+
+  /* Antwort erscheint, statt hart einzublenden. */
+  .fade-in { animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Nächste Karte kommt an, statt hart zu ersetzen. */
+  .card-enter { animation: cardEnter 0.22s ease; }
+  @keyframes cardEnter {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .goal-ring-progress { transition: stroke-dashoffset 0.6s ease; }
 }

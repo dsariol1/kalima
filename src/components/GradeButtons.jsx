@@ -14,7 +14,7 @@ export default function GradeButtons({ card, onGrade }) {
   const previews = previewDueDates(card);
   const now = Date.now();
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
+    <div className="fade-in" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
       {RATINGS.map((r) => (
         <button
           key={r.key}
