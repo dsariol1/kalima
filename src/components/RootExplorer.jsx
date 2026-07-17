@@ -23,8 +23,8 @@ import { ROOT_FAMILIES, ROOT_KEYS, WORD_INDEX, normalizeCitation } from '../data
 const REL_COLORS = {
   Handlung: C.primary,
   Person: C.gold,
-  Ort: '#3A6B8C',
-  Ergebnis: '#7C5CBF',
+  Ort: 'var(--accent-place)',
+  Ergebnis: 'var(--accent-result)',
 };
 
 const BOOK_TITLE = Object.fromEntries(BOOK_META.map((b) => [b.id, b.titleDe]));

@@ -25,8 +25,31 @@ export const C = {
 };
 
 export const SHADOW = {
-  card: '0 1px 2px rgba(27,42,38,0.05), 0 4px 14px rgba(27,42,38,0.06)',
+  card: 'var(--shadow-card)',
 };
+
+// Typo-Skala. Genau diese Stufen verwenden — keine freien Zwischenwerte
+// mehr in Komponenten. Arabisch (Amiri) hat eigene Stufen, weil die Schrift
+// bei gleicher px-Größe optisch deutlich kleiner rendert als Inter.
+export const FONT = {
+  xs: 12,   // Metadaten, Pills, Zähler
+  sm: 13,   // Sekundärtext, Link-Buttons, Beschreibungen
+  base: 14, // Standard-Fließtext, Inputs, Buttons
+  md: 16,   // hervorgehobener Text, Tool-Titel
+  lg: 18,   // Karten-Überschriften klein
+  xl: 21,   // Karten-Überschriften, Antworttext
+  h2: 26,   // Screen-Titel, Wortmarke
+  h1: 34,   // große Display-Momente
+  // Amiri-Stufen
+  arXs: 16, // Inline-Chips
+  arSm: 18, // Tastatur, Beispielsätze
+  arMd: 22, // Buchtitel, Wurzel, Eingabefeld
+  arLg: 34, // Quiz-Zielwort
+  arXl: 46, // Flashcard-Wort
+};
+
+// Spacing-Skala (px). Für margin/padding/gap in Komponenten.
+export const SPACE = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 };
 
 // Shared style primitives — spread into inline style objects and override
 // per call site. Keeps button/input/card styling in one place.
