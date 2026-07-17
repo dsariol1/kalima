@@ -170,7 +170,7 @@ export default function QuizSession({ allItems, progressMap, onExit, onGoFlashca
           {isAr2De ? 'Was bedeutet das?' : 'Welches Wort passt?'}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8, marginBottom: 14 }}>
+        <div className="quiz-options-grid">
           {options.map((opt) => {
             const isCorrect = opt.id === target.id;
             const isPicked = selected && opt.id === selected.id;

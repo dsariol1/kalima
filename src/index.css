@@ -97,6 +97,20 @@ select:focus-visible {
   outline-offset: 2px;
 }
 
+/* Quiz-Antwortgitter: immer 2 Spalten, damit 4 Optionen als 2×2 stehen
+   (nicht 3+1). Erst unter 420px Container-Breite auf eine Spalte. */
+.quiz-options-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+@media (max-width: 420px) {
+  .quiz-options-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   button { transition: filter 0.12s ease, box-shadow 0.15s ease, transform 0.06s ease; }
   button:hover { filter: brightness(0.97); }
