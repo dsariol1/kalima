@@ -210,7 +210,7 @@ export default function App() {
   }
 
   if (progressMap === null) {
-    return <div style={{ fontFamily: 'Inter, sans-serif', color: C.textSoft, padding: '3rem', textAlign: 'center' }}>Lade …</div>;
+    return <AppSkeleton />;
   }
 
   return (
@@ -386,6 +386,38 @@ export default function App() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// Platzhalter in Form der Startseite (Titel + Statkarte + zwei Tool-Karten),
+// solange loadAll() noch läuft — reserviert das Layout, damit beim
+// Nachladen nichts springt (CLS), statt nur "Lade …" zu zeigen.
+function SkeletonBlock({ style }) {
+  return <div className="skeleton-pulse" style={{ backgroundColor: C.surfaceMuted, borderRadius: 8, ...style }} />;
+}
+
+function AppSkeleton() {
+  return (
+    <div style={{
+      fontFamily: 'Inter, sans-serif', backgroundColor: C.bg, minHeight: '100vh',
+      padding: '1.5rem 1rem 3rem',
+    }}>
+      <div style={{ maxWidth: 560, margin: '0 auto' }}>
+        <div style={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          borderBottom: `1px solid ${C.border}`, paddingBottom: '0.85rem', marginBottom: '1.5rem',
+        }}>
+          <div style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.h2, fontWeight: 700, color: C.textSoft, lineHeight: 1 }}>
+            Kalima+
+          </div>
+        </div>
+        <SkeletonBlock style={{ width: 160, height: 28, marginBottom: SPACE.lg }} />
+        <SkeletonBlock style={{ ...card, height: 88, marginBottom: SPACE.xl, boxShadow: 'none' }} />
+        <SkeletonBlock style={{ width: 100, height: 14, marginBottom: SPACE.sm }} />
+        <SkeletonBlock style={{ ...card, height: 74, marginBottom: SPACE.md, boxShadow: 'none' }} />
+        <SkeletonBlock style={{ ...card, height: 74, boxShadow: 'none' }} />
+      </div>
     </div>
   );
 }

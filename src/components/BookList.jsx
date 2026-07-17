@@ -1,4 +1,4 @@
-import { ChevronRight } from 'lucide-react';
+import { BookX, ChevronRight } from 'lucide-react';
 import { countDueFresh } from '../srs/cards.js';
 import { C, card, pill, FONT, SPACE } from '../theme.js';
 
@@ -6,9 +6,25 @@ import { C, card, pill, FONT, SPACE } from '../theme.js';
 // deeper in BookDetail, so this stays a single decision (which book), not a
 // wall of every chapter across every book at once.
 export default function BookList({ tree, progressMap, onSelectBook }) {
+  const books = tree.filter((book) => book.total > 0);
+
+  if (books.length === 0) {
+    return (
+      <div style={{ ...card, padding: '2.5rem 1.5rem', textAlign: 'center' }}>
+        <BookX size={22} color={C.textSoft} style={{ marginBottom: 10 }} />
+        <div style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.lg, marginBottom: SPACE.sm }}>
+          Noch keine Bücher
+        </div>
+        <div style={{ fontSize: FONT.base, color: C.textSoft }}>
+          Es sind aktuell keine Bücher mit Wörtern verfügbar.
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
-      {tree.filter((book) => book.total > 0).map((book) => {
+      {books.map((book) => {
         const items = book.units.flatMap((u) => u.items);
         const { due, fresh } = countDueFresh(items, progressMap);
         return (

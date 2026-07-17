@@ -100,4 +100,10 @@ select:focus-visible {
   button { transition: filter 0.12s ease, box-shadow 0.15s ease, transform 0.06s ease; }
   button:hover { filter: brightness(0.97); }
   button:active { transform: translateY(1px); }
+
+  .skeleton-pulse { animation: skeletonPulse 1.4s ease-in-out infinite; }
+  @keyframes skeletonPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
 }

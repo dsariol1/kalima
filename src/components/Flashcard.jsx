@@ -150,7 +150,9 @@ function ProductionCard({ card, harakat, revealed, onReveal, family, showKeyboar
             <ArabicKeyboard onKey={insertAtCursor} onBackspace={backspaceAtCursor} />
           </div>
         )}
-        <button onClick={submit} style={primaryBtn}>Antwort prüfen</button>
+        <button onClick={submit} style={primaryBtn}>
+          {input.trim() ? 'Antwort prüfen' : 'Ich weiß es nicht'}
+        </button>
       </div>
     );
   }
