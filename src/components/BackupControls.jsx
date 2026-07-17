@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { Download, Upload } from 'lucide-react';
-import { C } from '../theme.js';
+import { C, FONT } from '../theme.js';
 
 
 // Deck backup: export the whole local state to a JSON file, or import one back
@@ -34,15 +34,15 @@ export default function BackupControls({ onExport, onImport }) {
   const btn = {
     display: 'inline-flex', alignItems: 'center', gap: 6,
     background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10,
-    padding: '7px 12px', cursor: 'pointer', fontFamily: 'inherit', fontSize: 12.5, color: C.text,
+    padding: '7px 12px', cursor: 'pointer', fontFamily: 'inherit', fontSize: FONT.sm, color: C.text,
   };
 
   return (
     <div style={{
       marginTop: '1.5rem', borderTop: `1px solid ${C.border}`, paddingTop: '1rem',
     }}>
-      <div style={{ fontSize: 12, color: C.textSoft, marginBottom: 8 }}>
-        Sicherung — dein Fortschritt liegt nur lokal im Browser.
+      <div style={{ fontSize: FONT.xs, color: C.textSoft, marginBottom: 8 }}>
+        Manuelle Sicherung als Datei — unabhängig von der Cloud-Synchronisierung.
       </div>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         <button onClick={doExport} style={btn}>
@@ -61,7 +61,7 @@ export default function BackupControls({ onExport, onImport }) {
       </div>
       {status && (
         <div style={{
-          marginTop: 8, fontSize: 12.5,
+          marginTop: 8, fontSize: FONT.sm,
           color: status.kind === 'ok' ? C.success : C.danger,
         }}>
           {status.msg}

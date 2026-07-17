@@ -1,12 +1,22 @@
-import { C, inputStyle } from '../theme.js';
+import { C, inputStyle, linkBtn, FONT, SPACE } from '../theme.js';
 
 const RETENTION_MIN = 70;
 const RETENTION_MAX = 97;
 const NEW_PER_SESSION_MIN = 1;
 const NEW_PER_SESSION_MAX = 50;
 
-const label = { display: 'block', fontSize: 12.5, color: C.text, marginBottom: 10 };
+const label = { display: 'block', fontSize: FONT.sm, color: C.text, marginBottom: SPACE.sm };
 const rowValue = { color: C.textSoft, fontWeight: 400 };
+
+function syncText(status, lastSyncedAt) {
+  if (status === 'syncing') return 'Wird synchronisiert …';
+  if (status === 'error') return 'Offline — Änderungen bleiben lokal gespeichert.';
+  if (lastSyncedAt) {
+    const t = lastSyncedAt.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+    return `Synchronisiert · ${t}`;
+  }
+  return 'Synchronisiert';
+}
 
 const THEME_OPTIONS = [
   { value: 'system', label: 'System' },
@@ -16,7 +26,11 @@ const THEME_OPTIONS = [
 
 // User-tunable FSRS knobs. Persisted via setSetting in db.js; retention also
 // needs to reach the scheduler itself (see App.jsx's onRetentionChange).
-export default function Settings({ retention, newPerSession, theme, onRetentionChange, onNewPerSessionChange, onThemeChange }) {
+export default function Settings({
+  retention, newPerSession, theme,
+  onRetentionChange, onNewPerSessionChange, onThemeChange,
+  syncStatus, lastSyncedAt, userEmail, onLogout,
+}) {
   const retentionPct = Math.round(retention * 100);
 
   return (
@@ -24,18 +38,19 @@ export default function Settings({ retention, newPerSession, theme, onRetentionC
     // top divider of its own.
     <div style={{ paddingTop: '0.5rem' }}>
       <span style={label}>Darstellung</span>
-      <div style={{ display: 'flex', gap: 6, marginBottom: 18 }}>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 18 }}>
         {THEME_OPTIONS.map((opt) => {
           const active = theme === opt.value;
           return (
             <button
               key={opt.value}
               onClick={() => onThemeChange(opt.value)}
+              aria-pressed={active}
               style={{
-                fontFamily: 'inherit', fontSize: 12.5, fontWeight: 500,
+                fontFamily: 'inherit', fontSize: FONT.sm, fontWeight: 500, minHeight: 40,
                 background: active ? C.primarySoft : 'transparent',
                 border: `1px solid ${active ? C.primary : C.border}`, borderRadius: 999,
-                padding: '5px 14px', color: active ? C.primary : C.textSoft, cursor: 'pointer',
+                padding: '5px 16px', color: active ? C.primary : C.textSoft, cursor: 'pointer',
               }}
             >
               {opt.label}
@@ -70,9 +85,24 @@ export default function Settings({ retention, newPerSession, theme, onRetentionC
               onNewPerSessionChange(Math.min(NEW_PER_SESSION_MAX, Math.max(NEW_PER_SESSION_MIN, n)));
             }
           }}
-          style={{ ...inputStyle, display: 'block', marginTop: 6, width: 80, fontSize: 13.5, padding: '6px 10px' }}
+          style={{ ...inputStyle, display: 'block', marginTop: 6, width: 80, fontSize: FONT.base, padding: '6px 10px' }}
         />
       </label>
+
+      {onLogout && (
+        <div style={{ marginTop: '1.5rem', borderTop: `1px solid ${C.border}`, paddingTop: '1rem' }}>
+          <span style={label}>Konto</span>
+          {userEmail && (
+            <div style={{ fontSize: FONT.sm, color: C.text, marginBottom: SPACE.xs }}>{userEmail}</div>
+          )}
+          <div style={{ fontSize: FONT.xs, color: syncStatus === 'error' ? C.danger : C.textSoft, marginBottom: SPACE.md }}>
+            {syncText(syncStatus, lastSyncedAt)}
+          </div>
+          <button type="button" onClick={onLogout} style={{ ...linkBtn, color: C.danger }}>
+            Abmelden
+          </button>
+        </div>
+      )}
     </div>
   );
 }

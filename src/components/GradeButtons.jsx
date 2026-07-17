@@ -1,6 +1,6 @@
 import { RATINGS, previewDueDates } from '../srs/scheduler.js';
 import { formatInterval } from '../utils/interval.js';
-import { C } from '../theme.js';
+import { C, FONT } from '../theme.js';
 
 const STYLE = {
   again: { color: C.danger, bg: C.dangerSoft },
@@ -14,11 +14,12 @@ export default function GradeButtons({ card, onGrade }) {
   const previews = previewDueDates(card);
   const now = Date.now();
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
+    <div className="fade-in" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
       {RATINGS.map((r) => (
         <button
           key={r.key}
           onClick={() => onGrade(r.grade)}
+          aria-label={`${r.label}, nächste Wiederholung in ${formatInterval(new Date(previews[r.key]).getTime() - now)}`}
           style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
             border: 'none', borderRadius: 12,
@@ -26,8 +27,8 @@ export default function GradeButtons({ card, onGrade }) {
             cursor: 'pointer', padding: '14px 8px', fontFamily: 'inherit',
           }}
         >
-          <span style={{ fontSize: 14.5, fontWeight: 600 }}>{r.label}</span>
-          <span style={{ fontSize: 11.5, opacity: 0.75 }}>
+          <span style={{ fontSize: FONT.base, fontWeight: 600 }}>{r.label}</span>
+          <span style={{ fontSize: FONT.xs, opacity: 0.75 }}>
             {formatInterval(new Date(previews[r.key]).getTime() - now)}
           </span>
         </button>

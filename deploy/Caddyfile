@@ -1,0 +1,6 @@
+# /etc/caddy/Caddyfile
+# Automatisches HTTPS (Let's Encrypt) — Caddy bezieht + erneuert das Zertifikat
+# selbst, sobald der A-Record auf diesen Server zeigt.
+api.kalima.sariol.ch {
+	reverse_proxy 127.0.0.1:8090
+}

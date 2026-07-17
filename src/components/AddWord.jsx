@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
-import { C, card, backBtn, primaryBtn, inputStyle, fieldLabel } from '../theme.js';
+import { C, card, backBtn, primaryBtn, inputStyle, fieldLabel, FONT } from '../theme.js';
 
 // Form for adding a word from whatever lesson the learner is studying.
 // This is how the deck grows into their own material — the vocab and its
 // meaning are the learner's own notes, stored locally in their browser.
-export default function AddWord({ bookId, units, onSave, onCancel }) {
+export default function AddWord({ bookId, units, exitLabel, onSave, onCancel }) {
   const [ar, setAr] = useState('');
   const [de, setDe] = useState('');
   const [translit, setTranslit] = useState('');
@@ -44,17 +44,17 @@ export default function AddWord({ bookId, units, onSave, onCancel }) {
   return (
     <div>
       <button onClick={onCancel} style={{ ...backBtn, marginBottom: 14 }}>
-        <ArrowLeft size={15} /> Zurück
+        <ArrowLeft size={15} /> {exitLabel || 'Zurück'}
       </button>
 
       <div style={{ ...card, padding: '1.25rem' }}>
-        <div style={{ fontFamily: 'Fraunces, serif', fontSize: 18, marginBottom: 14 }}>Eigenes Wort hinzufügen</div>
+        <div style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.lg, marginBottom: 14 }}>Eigenes Wort hinzufügen</div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div>
             <span style={label}>Arabisch (mit Harakat)</span>
-            <input dir="rtl" value={ar} onChange={(e) => setAr(e.target.value)}
-              placeholder="مَثَلًا: دَرْس" style={{ ...inputStyle, fontFamily: 'Amiri, serif', fontSize: 20 }} />
+            <input dir="rtl" lang="ar" value={ar} onChange={(e) => setAr(e.target.value)}
+              placeholder="مَثَلًا: دَرْس" style={{ ...inputStyle, fontFamily: 'Amiri, serif', fontSize: FONT.arMd }} />
           </div>
           <div>
             <span style={label}>Bedeutung (Deutsch)</span>
@@ -74,7 +74,7 @@ export default function AddWord({ bookId, units, onSave, onCancel }) {
           <div style={{ display: 'flex', gap: 10 }}>
             <div style={{ flex: 1 }}>
               <span style={label}>Wurzel (optional)</span>
-              <input dir="rtl" value={rootStr} onChange={(e) => setRootStr(e.target.value)}
+              <input dir="rtl" lang="ar" value={rootStr} onChange={(e) => setRootStr(e.target.value)}
                 placeholder="د ر س" style={{ ...inputStyle, fontFamily: 'Amiri, serif' }} />
             </div>
             <div style={{ flex: 1 }}>
@@ -88,7 +88,7 @@ export default function AddWord({ bookId, units, onSave, onCancel }) {
           onClick={save}
           disabled={!canSave}
           style={{
-            ...primaryBtn, marginTop: 16, width: '100%', padding: '10px', fontSize: 14,
+            ...primaryBtn, marginTop: 16, width: '100%', padding: '10px', fontSize: FONT.base,
             background: canSave ? C.primary : C.surfaceMuted,
             color: canSave ? '#FFFFFF' : C.textSoft,
             cursor: canSave ? 'pointer' : 'default',

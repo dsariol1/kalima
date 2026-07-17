@@ -18,10 +18,13 @@ Produktionskarten werden erst freigeschaltet, wenn die Erkennungskarte mindesten
 ## Architektur-Regeln
 
 - Nur `src/srs/scheduler.js` importiert `ts-fsrs`.
-- Persistenz ausschließlich über `src/db/db.js` (Dexie).
-- Keine Verwendung von `localStorage`.
+- Lokale Persistenz ausschließlich über `src/db/db.js` (Dexie).
+- Cloud-Sync ausschließlich über `src/db/sync.js` + `src/auth/pocketbase.js`; `db.js` importiert das PocketBase-SDK nie direkt.
+- Nur `src/auth/pocketbase.js` importiert das `pocketbase`-SDK.
+- Keine Verwendung von `localStorage` (auch der Auth-Token liegt in der Dexie-`settings`-Tabelle).
 - Dexie speichert `Date`-Objekte nativ.
 - Kartenverwaltung und Scheduling bleiben strikt getrennt.
+- Sync darf keine Latenz in den Review-Hot-Path (`useReview.js`) bringen: Schreibungen bleiben fire-and-forget, Push/Pull laufen entkoppelt über die `syncQueue`.
 - Karten-ID:
 
 `${vocabId}::${direction}`

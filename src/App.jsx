@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Settings as SettingsIcon } from 'lucide-react';
+import { ArrowLeft, Settings as SettingsIcon } from 'lucide-react';
 import { buildBookTree } from './data/books.js';
-import { countDueFresh } from './srs/cards.js';
+import { cardId, countDueFresh, isUnlocked } from './srs/cards.js';
 import { loadProgress, loadCustomVocab, addCustomVocab, addCustomVocabMany, exportAll, importAll, getSetting, setSetting, reviewsToday, currentStreak } from './db/db.js';
 import { DEFAULT_RETENTION, setRetention as configureRetention } from './srs/scheduler.js';
 import { DEFAULT_NEW_PER_SESSION } from './hooks/useReview.js';
@@ -15,7 +15,10 @@ import BulkAddWords from './components/BulkAddWords.jsx';
 import BackupControls from './components/BackupControls.jsx';
 import Settings from './components/Settings.jsx';
 import RootExplorer from './components/RootExplorer.jsx';
-import { C, card, backBtn } from './theme.js';
+import Login from './components/Login.jsx';
+import { pb, logout } from './auth/pocketbase.js';
+import { useSync } from './hooks/useSync.js';
+import { C, card, backBtn, FONT, SPACE } from './theme.js';
 
 // Top-level state machine: 'home' (Dashboard mit Lernwerkzeugen) ->
 // 'books' (Karteikarten-Tool) -> 'bookDetail' -> 'review' | 'add' | 'bulkAdd';
@@ -42,30 +45,55 @@ export default function App() {
   // prefers-color-scheme media query in index.css decides. Applied to
   // <html data-theme> so it wins the cascade over the media query.
   const [theme, setThemeState] = useState('system');
+  // Pflicht-Login: bis ein gültiger Auth-Token da ist, rendert nur der
+  // Login-Screen. pb.authStore ist über Dexie persistiert (auth/pocketbase.js).
+  const [authed, setAuthed] = useState(pb.authStore.isValid);
 
-  useEffect(() => {
-    (async () => {
-      const [p, c, r, n, t] = await Promise.all([
-        loadProgress(),
-        loadCustomVocab(),
-        getSetting('retention', DEFAULT_RETENTION),
-        getSetting('newPerSession', DEFAULT_NEW_PER_SESSION),
-        getSetting('theme', 'system'),
-      ]);
-      setProgressMap(p);
-      setCustomVocab(c);
-      setRetentionState(r);
-      setNewPerSession(n);
-      configureRetention(r);
-      setThemeState(t);
-    })();
+  // Kompletter Zustand aus Dexie. Wird beim Mount geladen und nach einem Sync,
+  // der Remote-Änderungen gezogen hat, erneut ausgeführt (onSynced).
+  const loadAll = useCallback(async () => {
+    const [p, c, r, n, t, h] = await Promise.all([
+      loadProgress(),
+      loadCustomVocab(),
+      getSetting('retention', DEFAULT_RETENTION),
+      getSetting('newPerSession', DEFAULT_NEW_PER_SESSION),
+      getSetting('theme', 'system'),
+      getSetting('harakat', true),
+    ]);
+    setProgressMap(p);
+    setCustomVocab(c);
+    setRetentionState(r);
+    setNewPerSession(n);
+    configureRetention(r);
+    setThemeState(t);
+    setHarakat(h);
   }, []);
+
+  useEffect(() => { loadAll(); }, [loadAll]);
+
+  // Auth-Zustand an das SDK koppeln (Login, Logout, Token-Ablauf).
+  useEffect(() => pb.authStore.onChange(() => setAuthed(pb.authStore.isValid)), []);
+
+  // Hintergrund-Sync, sobald eingeloggt. Zieht Pull Änderungen, lädt loadAll neu.
+  const sync = useSync({ enabled: authed, onSynced: loadAll });
 
   useEffect(() => {
     if (theme === 'system') {
       delete document.documentElement.dataset.theme;
+      // Zwei media-gebundene theme-color-Tags in index.html übernehmen wieder.
+      document.querySelectorAll('meta[name="theme-color"][data-override]').forEach((m) => m.remove());
     } else {
       document.documentElement.dataset.theme = theme;
+      // Expliziter Override braucht ein eigenes, medienloses Tag — die
+      // beiden statischen Tags reagieren nur auf prefers-color-scheme.
+      let meta = document.querySelector('meta[name="theme-color"][data-override]');
+      if (!meta) {
+        meta = document.createElement('meta');
+        meta.name = 'theme-color';
+        meta.dataset.override = 'true';
+        document.head.appendChild(meta);
+      }
+      meta.content = theme === 'dark' ? '#10201C' : '#F6F8F7';
     }
   }, [theme]);
 
@@ -78,6 +106,13 @@ export default function App() {
   const todayTotals = useMemo(() => {
     if (!progressMap) return { due: 0, fresh: 0 };
     return countDueFresh(allItems, progressMap);
+  }, [allItems, progressMap]);
+
+  // Gleiches Gating wie QuizSession: Recognition-Karte mindestens einmal
+  // bewertet. Nur fürs Dashboard-Badge — die Quiz-Logik selbst bleibt dort.
+  const quizPoolSize = useMemo(() => {
+    if (!progressMap) return 0;
+    return allItems.filter((v) => isUnlocked('production', progressMap[cardId(v.id, 'recognition')])).length;
   }, [allItems, progressMap]);
 
   // Ring + Streak bei jeder Rückkehr auf die Startseite neu laden — nach
@@ -179,8 +214,22 @@ export default function App() {
     setSetting('theme', t);
   }, []);
 
+  const handleHarakatChange = useCallback(() => {
+    setHarakat((h) => {
+      setSetting('harakat', !h);
+      return !h;
+    });
+  }, []);
+
+  // Pflicht-Gate: ohne Anmeldung nichts als der Login-Screen. Steht bewusst vor
+  // dem Lade-Guard — alles darunter läuft nur authentifiziert (keine dualen
+  // Gast-/Konto-Pfade).
+  if (!authed) {
+    return <Login />;
+  }
+
   if (progressMap === null) {
-    return <div style={{ fontFamily: 'Inter, sans-serif', color: C.textSoft, padding: '3rem', textAlign: 'center' }}>Lade …</div>;
+    return <AppSkeleton />;
   }
 
   return (
@@ -195,18 +244,19 @@ export default function App() {
         }}>
           {/* Text-Wortmarke in der Display-Schrift der Begrüßung; das
               goldene Plus ist das Markenzeichen. */}
-          <div style={{ fontFamily: 'Fraunces, serif', fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1 }}>
+          <div style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.h2, fontWeight: 700, color: C.text, lineHeight: 1 }}>
             Kalima<span style={{ color: C.gold }}>+</span>
           </div>
           {/* Harakat toggle only matters while a word is being quizzed. */}
           {view === 'review' && (
             <button
-              onClick={() => setHarakat((h) => !h)}
+              onClick={handleHarakatChange}
+              aria-pressed={harakat}
               style={{
-                fontFamily: 'inherit', fontSize: 12, fontWeight: 500,
+                fontFamily: 'inherit', fontSize: FONT.xs, fontWeight: 500,
                 background: harakat ? C.primarySoft : 'transparent',
-                border: `1px solid ${harakat ? C.primary : C.border}`, borderRadius: 999, padding: '4px 10px',
-                color: harakat ? C.primary : C.textSoft, cursor: 'pointer',
+                border: `1px solid ${harakat ? C.primary : C.border}`, borderRadius: 999, padding: '6px 12px',
+                color: harakat ? C.primary : C.textSoft, cursor: 'pointer', minHeight: 32,
               }}
             >
               Harakat {harakat ? 'an' : 'aus'}
@@ -232,6 +282,7 @@ export default function App() {
             todayTotals={todayTotals}
             doneToday={doneToday}
             streak={streak}
+            quizPoolSize={quizPoolSize}
             onOpenFlashcards={() => setView('books')}
             onOpenQuiz={() => setView('quiz')}
             onOpenExplorer={() => openRootExplorer()}
@@ -241,9 +292,9 @@ export default function App() {
         {view === 'books' && (
           <>
             <button onClick={() => setView('home')} style={{ ...backBtn, marginBottom: '1rem' }}>
-              ← Zurück
+              <ArrowLeft size={15} /> Start
             </button>
-            <div style={{ fontSize: 12.5, fontWeight: 500, color: C.textSoft, marginBottom: '0.6rem' }}>Bücher</div>
+            <div style={{ fontSize: FONT.sm, fontWeight: 500, color: C.textSoft, marginBottom: SPACE.sm }}>Bücher</div>
             <BookList
               tree={tree}
               progressMap={progressMap}
@@ -264,10 +315,10 @@ export default function App() {
         {view === 'settings' && (
           <>
             <button onClick={() => setView('home')} style={{ ...backBtn, marginBottom: '1rem' }}>
-              ← Zurück
+              <ArrowLeft size={15} /> Start
             </button>
-            <div style={{ ...card, padding: '1.25rem 1.5rem' }}>
-              <h2 style={{ fontFamily: 'Fraunces, serif', fontSize: 20, fontWeight: 600, margin: '0 0 0.5rem' }}>
+            <div style={{ ...card, padding: '1.25rem' }}>
+              <h2 style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.xl, fontWeight: 600, margin: '0 0 0.5rem' }}>
                 Einstellungen
               </h2>
               <Settings
@@ -277,6 +328,10 @@ export default function App() {
                 onRetentionChange={handleRetentionChange}
                 onNewPerSessionChange={handleNewPerSessionChange}
                 onThemeChange={handleThemeChange}
+                syncStatus={sync.status}
+                lastSyncedAt={sync.lastSyncedAt}
+                userEmail={pb.authStore.record?.email}
+                onLogout={logout}
               />
               <BackupControls onExport={handleExport} onImport={handleImport} />
             </div>
@@ -298,6 +353,7 @@ export default function App() {
           <ReviewSession
             scope={scope}
             scopeLabel={scopeLabel}
+            exitLabel={selectedBook?.titleDe || 'Buch'}
             progressMap={progressMap}
             customVocab={customVocab}
             harakat={harakat}
@@ -312,6 +368,7 @@ export default function App() {
           <AddWord
             bookId={selectedBookId}
             units={selectedBook ? selectedBook.units : []}
+            exitLabel={selectedBook?.titleDe || 'Buch'}
             onSave={saveWord}
             onCancel={() => setView('bookDetail')}
           />
@@ -321,6 +378,7 @@ export default function App() {
           <BulkAddWords
             bookId={selectedBookId}
             units={selectedBook ? selectedBook.units : []}
+            exitLabel={selectedBook?.titleDe || 'Buch'}
             onSave={saveBulkWords}
             onCancel={() => setView('bookDetail')}
           />
@@ -348,6 +406,38 @@ export default function App() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// Platzhalter in Form der Startseite (Titel + Statkarte + zwei Tool-Karten),
+// solange loadAll() noch läuft — reserviert das Layout, damit beim
+// Nachladen nichts springt (CLS), statt nur "Lade …" zu zeigen.
+function SkeletonBlock({ style }) {
+  return <div className="skeleton-pulse" style={{ backgroundColor: C.surfaceMuted, borderRadius: 8, ...style }} />;
+}
+
+function AppSkeleton() {
+  return (
+    <div style={{
+      fontFamily: 'Inter, sans-serif', backgroundColor: C.bg, minHeight: '100vh',
+      padding: '1.5rem 1rem 3rem',
+    }}>
+      <div style={{ maxWidth: 560, margin: '0 auto' }}>
+        <div style={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          borderBottom: `1px solid ${C.border}`, paddingBottom: '0.85rem', marginBottom: '1.5rem',
+        }}>
+          <div style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.h2, fontWeight: 700, color: C.textSoft, lineHeight: 1 }}>
+            Kalima+
+          </div>
+        </div>
+        <SkeletonBlock style={{ width: 160, height: 28, marginBottom: SPACE.lg }} />
+        <SkeletonBlock style={{ ...card, height: 88, marginBottom: SPACE.xl, boxShadow: 'none' }} />
+        <SkeletonBlock style={{ width: 100, height: 14, marginBottom: SPACE.sm }} />
+        <SkeletonBlock style={{ ...card, height: 74, marginBottom: SPACE.md, boxShadow: 'none' }} />
+        <SkeletonBlock style={{ ...card, height: 74, boxShadow: 'none' }} />
+      </div>
     </div>
   );
 }

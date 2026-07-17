@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap');
+/* Fonts werden in index.html per <link> geladen (preconnect + nicht
+   render-blockierendes @import) statt hier. */
 
 * { box-sizing: border-box; }
 
@@ -22,6 +23,9 @@ html, body, #root { margin: 0; padding: 0; }
   --danger: #B42318;
   --dangerSoft: #FDEEEA;
   --border: #E3E8E5;
+  --shadow-card: 0 1px 2px rgba(27,42,38,0.05), 0 4px 14px rgba(27,42,38,0.06);
+  --accent-place: #3A6B8C;
+  --accent-result: #7C5CBF;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -38,6 +42,9 @@ html, body, #root { margin: 0; padding: 0; }
     --danger: #F2555A;
     --dangerSoft: #3A1B1A;
     --border: #264640;
+    --shadow-card: 0 1px 2px rgba(0,0,0,0.3), 0 4px 14px rgba(0,0,0,0.35);
+    --accent-place: #7FA8C4;
+    --accent-result: #A78BE0;
   }
 }
 
@@ -54,6 +61,9 @@ html, body, #root { margin: 0; padding: 0; }
   --danger: #F2555A;
   --dangerSoft: #3A1B1A;
   --border: #264640;
+  --shadow-card: 0 1px 2px rgba(0,0,0,0.3), 0 4px 14px rgba(0,0,0,0.35);
+  --accent-place: #7FA8C4;
+  --accent-result: #A78BE0;
 }
 
 :root[data-theme="light"] {
@@ -69,6 +79,9 @@ html, body, #root { margin: 0; padding: 0; }
   --danger: #B42318;
   --dangerSoft: #FDEEEA;
   --border: #E3E8E5;
+  --shadow-card: 0 1px 2px rgba(27,42,38,0.05), 0 4px 14px rgba(27,42,38,0.06);
+  --accent-place: #3A6B8C;
+  --accent-result: #7C5CBF;
 }
 
 body {
@@ -84,8 +97,45 @@ select:focus-visible {
   outline-offset: 2px;
 }
 
+/* Quiz-Antwortgitter: immer 2 Spalten, damit 4 Optionen als 2×2 stehen
+   (nicht 3+1). Erst unter 420px Container-Breite auf eine Spalte. */
+.quiz-options-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+@media (max-width: 420px) {
+  .quiz-options-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   button { transition: filter 0.12s ease, box-shadow 0.15s ease, transform 0.06s ease; }
   button:hover { filter: brightness(0.97); }
   button:active { transform: translateY(1px); }
+
+  .skeleton-pulse { animation: skeletonPulse 1.4s ease-in-out infinite; }
+  @keyframes skeletonPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  /* Antwort erscheint, statt hart einzublenden. */
+  .fade-in { animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Nächste Karte kommt an, statt hart zu ersetzen. */
+  .card-enter { animation: cardEnter 0.22s ease; }
+  @keyframes cardEnter {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .goal-ring-progress { transition: stroke-dashoffset 0.6s ease; }
+  .progress-bar-fill { transition: width 0.25s ease; }
 }

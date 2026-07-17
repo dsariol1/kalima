@@ -1,6 +1,6 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Volume2, Plus, Minus, CheckCircle2, Sparkles } from 'lucide-react';
-import { C, card, backBtn, linkBtn, primaryBtn, pill } from '../theme.js';
+import { ArrowLeft, Volume2, Plus, Minus, CheckCircle2, Sparkles } from 'lucide-react';
+import { C, card, backBtn, linkBtn, primaryBtn, pill, FONT } from '../theme.js';
 import { BUILTIN_VOCAB, BOOK_META } from '../data/books.js';
 import { ROOT_FAMILIES, ROOT_KEYS, WORD_INDEX, normalizeCitation } from '../data/rootFamilies.js';
 
@@ -23,8 +23,8 @@ import { ROOT_FAMILIES, ROOT_KEYS, WORD_INDEX, normalizeCitation } from '../data
 const REL_COLORS = {
   Handlung: C.primary,
   Person: C.gold,
-  Ort: '#3A6B8C',
-  Ergebnis: '#7C5CBF',
+  Ort: 'var(--accent-place)',
+  Ergebnis: 'var(--accent-result)',
 };
 
 const BOOK_TITLE = Object.fromEntries(BOOK_META.map((b) => [b.id, b.titleDe]));
@@ -73,7 +73,7 @@ function shuffle(arr) {
 // der dir="rtl"-Container übernimmt die visuelle Spiegelung automatisch.
 function RootedWord({ segments, size, rootColor, patternColor, patternOpacity = 0.55 }) {
   return (
-    <span dir="rtl" style={{ fontFamily: 'Amiri, serif', fontSize: size }}>
+    <span dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: size }}>
       {segments.map((s, i) => (
         <span key={i} style={{ color: s.root ? rootColor : patternColor, opacity: s.root ? 1 : patternOpacity }}>
           {s.t}
@@ -252,7 +252,7 @@ function PatternQuiz({ onExit, onJumpToWord }) {
       )}
 
       <div style={{ textAlign: 'center', marginTop: 14 }}>
-        <button onClick={onExit} style={linkBtn}>← Zurück zum Explorer</button>
+        <button onClick={onExit} style={{ ...linkBtn, justifyContent: 'center' }}><ArrowLeft size={13} /> Zurück zum Explorer</button>
       </div>
     </div>
   );
@@ -268,7 +268,7 @@ function PatternLens({ onJumpToWord }) {
       {PATTERN_GROUPS.map((g) => (
         <div key={g.pattern} style={{ ...card, padding: '0.9rem 1rem' }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 }}>
-            <span dir="rtl" style={{ fontFamily: 'Amiri, serif', fontSize: 22, color: C.primary }}>{g.pattern}</span>
+            <span dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: 22, color: C.primary }}>{g.pattern}</span>
             <span style={{ fontSize: 11, color: C.textSoft }}>{g.words.length} Wörter</span>
           </div>
           <div style={{ fontSize: 12.5, color: C.textSoft, marginBottom: 10, lineHeight: 1.4 }}>{g.patternMeaning}</div>
@@ -455,7 +455,7 @@ export default function RootExplorer({ onBack, initialRootKey, initialCenterAr, 
       <div style={{ backgroundColor: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: '10px 12px', marginBottom: 10 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 }}>
           <span style={{ fontSize: 11, color: C.textSoft, fontWeight: 500 }}>Muster (وزن)</span>
-          <span dir="rtl" style={{ fontFamily: 'Amiri, serif', fontSize: 20, color: REL_COLORS[center.relation] || C.primary }}>{center.pattern}</span>
+          <span dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: 20, color: REL_COLORS[center.relation] || C.primary }}>{center.pattern}</span>
         </div>
         <div style={{ fontSize: 12.5, color: C.textSoft, lineHeight: 1.4 }}>{center.patternMeaning}</div>
       </div>
@@ -480,7 +480,7 @@ export default function RootExplorer({ onBack, initialRootKey, initialCenterAr, 
                   background: clickable ? C.primarySoft : 'transparent', cursor: clickable ? 'pointer' : 'default',
                 }}
               >
-                <span dir="rtl" style={{ fontFamily: 'Amiri, serif', fontSize: 15, color: clickable ? C.primary : C.text }}>{p.ar}</span>
+                <span dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: 15, color: clickable ? C.primary : C.text }}>{p.ar}</span>
                 <span style={{ color: clickable ? C.primary : C.textSoft }}>— {p.de}</span>
               </Tag>
             );
@@ -489,7 +489,7 @@ export default function RootExplorer({ onBack, initialRootKey, initialCenterAr, 
       </div>
 
       <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 10 }}>
-        <div dir="rtl" style={{ fontFamily: 'Amiri, serif', fontSize: 18, marginBottom: 3 }}>{center.example.ar}</div>
+        <div dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: 18, marginBottom: 3 }}>{center.example.ar}</div>
         <div style={{ fontSize: 13, color: C.textSoft, fontStyle: 'italic' }}>„{center.example.de}"</div>
       </div>
     </div>
@@ -497,7 +497,12 @@ export default function RootExplorer({ onBack, initialRootKey, initialCenterAr, 
 
   return (
     <div ref={wrapRef}>
-      <button onClick={onBack} style={{ ...backBtn, marginBottom: '0.9rem' }}>← Zurück</button>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.9rem' }}>
+        <button onClick={onBack} style={backBtn}><ArrowLeft size={15} /> Zurück</button>
+        <div style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.md, fontWeight: 700, color: C.text, lineHeight: 1 }}>
+          Kalima<span style={{ color: C.gold }}>+</span>
+        </div>
+      </div>
 
       {/* Kopfzeile: Wurzel-Pills (nur in der Graph-Ansicht relevant — Muster
           und Quiz arbeiten wurzelübergreifend) + Ansichts-Umschalter. */}
@@ -514,7 +519,7 @@ export default function RootExplorer({ onBack, initialRootKey, initialCenterAr, 
               cursor: 'pointer', fontFamily: 'inherit',
             }}
           >
-            <span dir="rtl" style={{ fontFamily: 'Amiri, serif', fontSize: 14 }}>
+            <span dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: 14 }}>
               {ROOT_FAMILIES[key].root.join(' ')}
             </span>
             {ROOT_FAMILIES[key].rootMeaning.split(',')[0]}
@@ -528,7 +533,7 @@ export default function RootExplorer({ onBack, initialRootKey, initialCenterAr, 
       {/* Sektions-Headline: linksbündige Leseachse statt Zentrier-Monotonie. */}
       {view === 'graph' && (
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 14, borderBottom: `1px solid ${C.border}`, paddingBottom: 10 }}>
-          <span dir="rtl" style={{ fontFamily: 'Amiri, serif', fontSize: 34, letterSpacing: 8, color: C.primary, fontWeight: 700, lineHeight: 1.2 }}>
+          <span dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: 34, letterSpacing: 8, color: C.primary, fontWeight: 700, lineHeight: 1.2 }}>
             {family.root.join(' ')}
           </span>
           <span style={{ fontSize: 13, color: C.textSoft }}>Wurzel · {family.rootMeaning}</span>
@@ -605,7 +610,7 @@ export default function RootExplorer({ onBack, initialRootKey, initialCenterAr, 
                       {!compact && (
                         <>
                           <span style={{ fontSize: size.de * denseScale, color: C.textSoft }}>{w.de}</span>
-                          <span dir="rtl" style={{ fontSize: size.pattern * denseScale, color: C.textSoft, opacity: 0.7 }}>{w.pattern}</span>
+                          <span dir="rtl" lang="ar" style={{ fontSize: size.pattern * denseScale, color: C.textSoft, opacity: 0.7 }}>{w.pattern}</span>
                         </>
                       )}
                     </button>
@@ -631,7 +636,7 @@ export default function RootExplorer({ onBack, initialRootKey, initialCenterAr, 
                   )}
                   <RootedWord segments={center.segments} size={30} rootColor="#FFFFFF" patternColor="#FFFFFF" patternOpacity={0.55} />
                   <span style={{ fontSize: 12 }}>{center.de}</span>
-                  <span dir="rtl" style={{ fontSize: 11, opacity: 0.75 }}>{center.pattern}</span>
+                  <span dir="rtl" lang="ar" style={{ fontSize: 11, opacity: 0.75 }}>{center.pattern}</span>
                 </div>
               </div>
             </div>

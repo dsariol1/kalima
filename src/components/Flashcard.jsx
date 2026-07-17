@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { Keyboard, Share2 } from 'lucide-react';
 import { checkAnswer } from '../utils/answerCheck.js';
 import ArabicKeyboard from './ArabicKeyboard.jsx';
-import { C, card as cardStyle, primaryBtn, linkBtn, inputStyle, pill } from '../theme.js';
+import { C, card as cardStyle, primaryBtn, linkBtn, inputStyle, pill, FONT, SPACE } from '../theme.js';
 import { ROOT_KEYS } from '../data/rootFamilies.js';
 
 // Der Wurzel-Explorer-Prototyp kennt bisher nur die Wurzeln aus
@@ -22,7 +22,7 @@ const VERDICT = {
 
 function ArabicWord({ card, harakat }) {
   return (
-    <div dir="rtl" style={{ fontFamily: 'Amiri, serif', fontSize: 46, lineHeight: 1.5, paddingTop: 6 }}>
+    <div dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: FONT.arXl, lineHeight: 1.5, paddingTop: 6 }}>
       {harakat ? card.ar : card.bare}
     </div>
   );
@@ -34,10 +34,10 @@ function RootFamily({ card, family, onExploreRoot }) {
   const canExplore = onExploreRoot && ROOT_EXPLORER_DEMO_ROOTS.has(rootKey);
   return (
     <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 12 }}>
-      <div dir="rtl" style={{ fontFamily: 'Amiri, serif', fontSize: 22, letterSpacing: 3, marginBottom: 2 }}>
+      <div dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: FONT.arMd, letterSpacing: 3, marginBottom: 2 }}>
         {card.root.join(' ')}
       </div>
-      <div style={{ fontSize: 12.5, color: C.textSoft, marginBottom: 8 }}>
+      <div style={{ fontSize: FONT.sm, color: C.textSoft, marginBottom: SPACE.sm }}>
         Wurzel · {card.rootMeaning}
       </div>
       {canExplore && (
@@ -55,11 +55,11 @@ function RootFamily({ card, family, onExploreRoot }) {
               key={f.id}
               style={{
                 border: `1px solid ${C.border}`, borderRadius: 999, padding: '4px 12px',
-                backgroundColor: C.bg, fontSize: 12.5,
+                backgroundColor: C.bg, fontSize: FONT.sm,
                 display: 'inline-flex', gap: 6, alignItems: 'center',
               }}
             >
-              <span dir="rtl" style={{ fontFamily: 'Amiri, serif', fontSize: 15 }}>{f.ar}</span>
+              <span dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: FONT.arXs }}>{f.ar}</span>
               <span style={{ color: C.textSoft }}>— {f.de}</span>
             </span>
           ))}
@@ -73,8 +73,8 @@ function Example({ card }) {
   if (!card.example) return null;
   return (
     <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 14, paddingTop: 12 }}>
-      <div dir="rtl" style={{ fontFamily: 'Amiri, serif', fontSize: 19, marginBottom: 4 }}>{card.example.ar}</div>
-      <div style={{ fontSize: 13, color: C.textSoft, fontStyle: 'italic' }}>„{card.example.de}"</div>
+      <div dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: FONT.arSm, marginBottom: SPACE.xs }}>{card.example.ar}</div>
+      <div style={{ fontSize: FONT.sm, color: C.textSoft, fontStyle: 'italic' }}>„{card.example.de}"</div>
     </div>
   );
 }
@@ -128,18 +128,19 @@ function ProductionCard({ card, harakat, revealed, onReveal, family, showKeyboar
     // keyboard toggle, (keyboard), then the check button underneath.
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-        <div style={{ fontFamily: 'Fraunces, serif', fontSize: 24, marginBottom: 4 }}>{card.de}</div>
+        <div style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.xl, marginBottom: SPACE.xs }}>{card.de}</div>
         <input
           ref={inputRef}
           autoFocus
           dir="rtl"
+          lang="ar"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}
           placeholder="مَثَلًا: بَيْت"
           style={{
             ...inputStyle, textAlign: 'center', marginTop: 0,
-            fontFamily: 'Amiri, serif', fontSize: 22, padding: '10px 12px',
+            fontFamily: 'Amiri, serif', fontSize: FONT.arMd, padding: '10px 12px',
           }}
         />
         <button type="button" onClick={onToggleKeyboard} style={linkBtn}>
@@ -150,17 +151,19 @@ function ProductionCard({ card, harakat, revealed, onReveal, family, showKeyboar
             <ArabicKeyboard onKey={insertAtCursor} onBackspace={backspaceAtCursor} />
           </div>
         )}
-        <button onClick={submit} style={primaryBtn}>Antwort prüfen</button>
+        <button onClick={submit} style={primaryBtn}>
+          {input.trim() ? 'Antwort prüfen' : 'Ich weiß es nicht'}
+        </button>
       </div>
     );
   }
 
   const verdict = input.trim() ? (correct ? VERDICT.correct : VERDICT.wrong) : null;
   return (
-    <>
-      <div style={{ fontFamily: 'Fraunces, serif', fontSize: 21, marginBottom: 12 }}>{card.de}</div>
+    <div className="fade-in">
+      <div style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.xl, marginBottom: SPACE.md }}>{card.de}</div>
       {verdict && (
-        <div style={{ fontSize: 14, fontWeight: 600, color: verdict.color, marginBottom: 12 }}>
+        <div style={{ fontSize: FONT.base, fontWeight: 600, color: verdict.color, marginBottom: SPACE.md }}>
           {verdict.label}
           {!correct && <span style={{ fontWeight: 400, color: C.textSoft }}> · „{input.trim()}"</span>}
         </div>
@@ -170,7 +173,7 @@ function ProductionCard({ card, harakat, revealed, onReveal, family, showKeyboar
         <RootFamily card={card} family={family} onExploreRoot={onExploreRoot} />
         <Example card={card} />
       </div>
-    </>
+    </div>
   );
 }
 
@@ -182,8 +185,8 @@ function RecognitionCard({ card, harakat, revealed, onReveal, family, onExploreR
       {!revealed ? (
         <button onClick={onReveal} style={{ ...primaryBtn, marginTop: 16 }}>Bedeutung zeigen</button>
       ) : (
-        <div style={{ marginTop: 16 }}>
-          <div style={{ fontFamily: 'Fraunces, serif', fontSize: 21, marginBottom: 14 }}>{card.de}</div>
+        <div className="fade-in" style={{ marginTop: 16 }}>
+          <div style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.xl, marginBottom: SPACE.md }}>{card.de}</div>
           <RootFamily card={card} family={family} onExploreRoot={onExploreRoot} />
           <Example card={card} />
         </div>
@@ -199,6 +202,7 @@ export default function Flashcard({ card, direction, harakat, revealed, onReveal
 
   return (
     <div
+      className="card-enter"
       style={{
         ...cardStyle,
         padding: '2rem 1.5rem',

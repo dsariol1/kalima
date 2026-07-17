@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { ArrowLeft, Puzzle, Sparkles } from 'lucide-react';
 import { cardId, isUnlocked } from '../srs/cards.js';
-import { C, card, backBtn, primaryBtn } from '../theme.js';
+import { C, card, backBtn, primaryBtn, FONT, SPACE } from '../theme.js';
+import ProgressBar from './ProgressBar.jsx';
 
 // Multiple-Choice-Quiz über bereits gelernte Wörter (Recognition-Karte
 // mindestens einmal bewertet). Bewusst OHNE Scheduler- und Persistenz-
@@ -82,9 +83,9 @@ export default function QuizSession({ allItems, progressMap, onExit, onGoFlashca
   const header = (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
       <button onClick={onExit} style={backBtn}>
-        <ArrowLeft size={15} /> Zurück
+        <ArrowLeft size={15} /> Start
       </button>
-      <span style={{ fontSize: 12.5, color: C.textSoft, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+      <span style={{ fontSize: FONT.sm, color: C.textSoft, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
         <Puzzle size={14} color={C.gold} /> Quiz
       </span>
     </div>
@@ -94,12 +95,12 @@ export default function QuizSession({ allItems, progressMap, onExit, onGoFlashca
     return (
       <div>
         {header}
-        <div style={{ ...card, padding: '2.5rem 1.5rem', textAlign: 'center' }}>
+        <div style={{ ...card, padding: '2rem 1.5rem', textAlign: 'center' }}>
           <Puzzle size={22} color={C.gold} style={{ marginBottom: 10 }} />
-          <div style={{ fontFamily: 'Fraunces, serif', fontSize: 19, marginBottom: 8 }}>
+          <div style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.lg, marginBottom: SPACE.sm }}>
             Noch nicht genug gelernte Wörter
           </div>
-          <div style={{ fontSize: 13.5, color: C.textSoft }}>
+          <div style={{ fontSize: FONT.base, color: C.textSoft }}>
             Das Quiz fragt nur Wörter ab, die du schon in den Karteikarten
             gesehen hast. Wiederhole zuerst ein paar Karten — ab {MIN_POOL} gelernten
             Wörtern geht es hier los.
@@ -116,10 +117,10 @@ export default function QuizSession({ allItems, progressMap, onExit, onGoFlashca
     return (
       <div>
         {header}
-        <div style={{ ...card, padding: '2.5rem 1.5rem', textAlign: 'center' }}>
+        <div style={{ ...card, padding: '2rem 1.5rem', textAlign: 'center' }}>
           <Sparkles size={22} color={C.gold} style={{ marginBottom: 10 }} />
-          <div style={{ fontFamily: 'Fraunces, serif', fontSize: 19, marginBottom: 8 }}>Quiz abgeschlossen</div>
-          <div style={{ fontSize: 13.5, color: C.textSoft }}>
+          <div style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.lg, marginBottom: SPACE.sm }}>Quiz abgeschlossen</div>
+          <div style={{ fontSize: FONT.base, color: C.textSoft }}>
             {correct} von {round.length} richtig. {resultLine(correct, round.length)}
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 14, marginTop: 16 }}>
@@ -149,26 +150,27 @@ export default function QuizSession({ allItems, progressMap, onExit, onGoFlashca
   return (
     <div>
       {header}
-      <div style={{ ...card, padding: '1.25rem 1rem' }}>
-        <div style={{ fontSize: 12.5, color: C.textSoft, textAlign: 'center', marginBottom: 16 }}>
+      <div style={{ ...card, padding: '1.25rem' }}>
+        <ProgressBar pct={index / round.length} />
+        <div style={{ fontSize: FONT.sm, color: C.textSoft, textAlign: 'center', margin: `8px 0 ${SPACE.lg}px` }}>
           Frage {index + 1}/{round.length} · {correct} richtig
         </div>
 
         <div style={{ textAlign: 'center', marginBottom: 14 }}>
           {isAr2De ? (
-            <div dir="rtl" style={{ fontFamily: 'Amiri, serif', fontSize: 34, lineHeight: 1.4, color: C.text }}>
+            <div dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: FONT.arLg, lineHeight: 1.4, color: C.text }}>
               {target.ar}
             </div>
           ) : (
-            <div style={{ fontSize: 20, fontWeight: 500 }}>{target.de}</div>
+            <div style={{ fontSize: FONT.xl, fontWeight: 500 }}>{target.de}</div>
           )}
         </div>
 
-        <div style={{ fontSize: 13, color: C.text, textAlign: 'center', marginBottom: 12 }}>
+        <div style={{ fontSize: FONT.sm, color: C.text, textAlign: 'center', marginBottom: SPACE.md }}>
           {isAr2De ? 'Was bedeutet das?' : 'Welches Wort passt?'}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
+        <div className="quiz-options-grid">
           {options.map((opt) => {
             const isCorrect = opt.id === target.id;
             const isPicked = selected && opt.id === selected.id;
@@ -184,13 +186,13 @@ export default function QuizSession({ allItems, progressMap, onExit, onGoFlashca
                 disabled={!!selected}
                 style={{
                   padding: '10px 8px', borderRadius: 10, border: `1.5px solid ${border}`,
-                  backgroundColor: bg, color, fontFamily: 'inherit', fontSize: 13,
+                  backgroundColor: bg, color, fontFamily: 'inherit', fontSize: FONT.base,
                   cursor: selected ? 'default' : 'pointer', textAlign: 'center',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 40,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 44,
                 }}
               >
                 {isAr2De ? opt.de : (
-                  <span dir="rtl" style={{ fontFamily: 'Amiri, serif', fontSize: 19, lineHeight: 1.3 }}>{opt.ar}</span>
+                  <span dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: FONT.arSm, lineHeight: 1.3 }}>{opt.ar}</span>
                 )}
               </button>
             );
@@ -199,8 +201,8 @@ export default function QuizSession({ allItems, progressMap, onExit, onGoFlashca
 
         {selected && (
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 12.5, color: C.textSoft, marginBottom: 10 }}>
-              <span dir="rtl" style={{ fontFamily: 'Amiri, serif', fontSize: 15 }}>{target.ar}</span> = {target.de}
+            <div style={{ fontSize: FONT.base, color: C.text, marginBottom: SPACE.md }}>
+              <span dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: FONT.arSm }}>{target.ar}</span> = {target.de}
             </div>
             <button onClick={next} style={primaryBtn}>
               {isLast ? 'Ergebnis anzeigen' : 'Nächste Frage'}

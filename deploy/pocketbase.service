@@ -1,0 +1,23 @@
+[Unit]
+Description=PocketBase (Kalima+ backend)
+After=network.target
+
+[Service]
+Type=simple
+User=pocketbase
+Group=pocketbase
+WorkingDirectory=/opt/pocketbase
+ExecStart=/opt/pocketbase/pocketbase serve --http=127.0.0.1:8090
+Restart=always
+RestartSec=5
+LimitNOFILE=4096
+
+# Hardening — PocketBase only needs its own data dir.
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/opt/pocketbase
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
