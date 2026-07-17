@@ -1,0 +1,8 @@
+[Unit]
+Description=PocketBase daily SQLite backup
+
+[Service]
+Type=oneshot
+User=pocketbase
+Group=pocketbase
+ExecStart=/opt/pocketbase/backup-pocketbase.sh

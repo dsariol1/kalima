@@ -15,6 +15,9 @@ import BulkAddWords from './components/BulkAddWords.jsx';
 import BackupControls from './components/BackupControls.jsx';
 import Settings from './components/Settings.jsx';
 import RootExplorer from './components/RootExplorer.jsx';
+import Login from './components/Login.jsx';
+import { pb, logout } from './auth/pocketbase.js';
+import { useSync } from './hooks/useSync.js';
 import { C, card, backBtn } from './theme.js';
 
 // Top-level state machine: 'home' (Dashboard mit Lernwerkzeugen) ->
@@ -42,24 +45,35 @@ export default function App() {
   // prefers-color-scheme media query in index.css decides. Applied to
   // <html data-theme> so it wins the cascade over the media query.
   const [theme, setThemeState] = useState('system');
+  // Pflicht-Login: bis ein gültiger Auth-Token da ist, rendert nur der
+  // Login-Screen. pb.authStore ist über Dexie persistiert (auth/pocketbase.js).
+  const [authed, setAuthed] = useState(pb.authStore.isValid);
 
-  useEffect(() => {
-    (async () => {
-      const [p, c, r, n, t] = await Promise.all([
-        loadProgress(),
-        loadCustomVocab(),
-        getSetting('retention', DEFAULT_RETENTION),
-        getSetting('newPerSession', DEFAULT_NEW_PER_SESSION),
-        getSetting('theme', 'system'),
-      ]);
-      setProgressMap(p);
-      setCustomVocab(c);
-      setRetentionState(r);
-      setNewPerSession(n);
-      configureRetention(r);
-      setThemeState(t);
-    })();
+  // Kompletter Zustand aus Dexie. Wird beim Mount geladen und nach einem Sync,
+  // der Remote-Änderungen gezogen hat, erneut ausgeführt (onSynced).
+  const loadAll = useCallback(async () => {
+    const [p, c, r, n, t] = await Promise.all([
+      loadProgress(),
+      loadCustomVocab(),
+      getSetting('retention', DEFAULT_RETENTION),
+      getSetting('newPerSession', DEFAULT_NEW_PER_SESSION),
+      getSetting('theme', 'system'),
+    ]);
+    setProgressMap(p);
+    setCustomVocab(c);
+    setRetentionState(r);
+    setNewPerSession(n);
+    configureRetention(r);
+    setThemeState(t);
   }, []);
+
+  useEffect(() => { loadAll(); }, [loadAll]);
+
+  // Auth-Zustand an das SDK koppeln (Login, Logout, Token-Ablauf).
+  useEffect(() => pb.authStore.onChange(() => setAuthed(pb.authStore.isValid)), []);
+
+  // Hintergrund-Sync, sobald eingeloggt. Zieht Pull Änderungen, lädt loadAll neu.
+  const sync = useSync({ enabled: authed, onSynced: loadAll });
 
   useEffect(() => {
     if (theme === 'system') {
@@ -179,6 +193,13 @@ export default function App() {
     setSetting('theme', t);
   }, []);
 
+  // Pflicht-Gate: ohne Anmeldung nichts als der Login-Screen. Steht bewusst vor
+  // dem Lade-Guard — alles darunter läuft nur authentifiziert (keine dualen
+  // Gast-/Konto-Pfade).
+  if (!authed) {
+    return <Login />;
+  }
+
   if (progressMap === null) {
     return <div style={{ fontFamily: 'Inter, sans-serif', color: C.textSoft, padding: '3rem', textAlign: 'center' }}>Lade …</div>;
   }
@@ -277,6 +298,10 @@ export default function App() {
                 onRetentionChange={handleRetentionChange}
                 onNewPerSessionChange={handleNewPerSessionChange}
                 onThemeChange={handleThemeChange}
+                syncStatus={sync.status}
+                lastSyncedAt={sync.lastSyncedAt}
+                userEmail={pb.authStore.record?.email}
+                onLogout={logout}
               />
               <BackupControls onExport={handleExport} onImport={handleImport} />
             </div>

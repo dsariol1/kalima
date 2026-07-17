@@ -1,4 +1,4 @@
-import { C, inputStyle } from '../theme.js';
+import { C, inputStyle, linkBtn } from '../theme.js';
 
 const RETENTION_MIN = 70;
 const RETENTION_MAX = 97;
@@ -8,6 +8,16 @@ const NEW_PER_SESSION_MAX = 50;
 const label = { display: 'block', fontSize: 12.5, color: C.text, marginBottom: 10 };
 const rowValue = { color: C.textSoft, fontWeight: 400 };
 
+function syncText(status, lastSyncedAt) {
+  if (status === 'syncing') return 'Wird synchronisiert …';
+  if (status === 'error') return 'Offline — Änderungen bleiben lokal gespeichert.';
+  if (lastSyncedAt) {
+    const t = lastSyncedAt.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+    return `Synchronisiert · ${t}`;
+  }
+  return 'Synchronisiert';
+}
+
 const THEME_OPTIONS = [
   { value: 'system', label: 'System' },
   { value: 'light', label: 'Hell' },
@@ -16,7 +26,11 @@ const THEME_OPTIONS = [
 
 // User-tunable FSRS knobs. Persisted via setSetting in db.js; retention also
 // needs to reach the scheduler itself (see App.jsx's onRetentionChange).
-export default function Settings({ retention, newPerSession, theme, onRetentionChange, onNewPerSessionChange, onThemeChange }) {
+export default function Settings({
+  retention, newPerSession, theme,
+  onRetentionChange, onNewPerSessionChange, onThemeChange,
+  syncStatus, lastSyncedAt, userEmail, onLogout,
+}) {
   const retentionPct = Math.round(retention * 100);
 
   return (
@@ -73,6 +87,21 @@ export default function Settings({ retention, newPerSession, theme, onRetentionC
           style={{ ...inputStyle, display: 'block', marginTop: 6, width: 80, fontSize: 13.5, padding: '6px 10px' }}
         />
       </label>
+
+      {onLogout && (
+        <div style={{ marginTop: '1.5rem', borderTop: `1px solid ${C.border}`, paddingTop: '1rem' }}>
+          <span style={label}>Konto</span>
+          {userEmail && (
+            <div style={{ fontSize: 12.5, color: C.text, marginBottom: 4 }}>{userEmail}</div>
+          )}
+          <div style={{ fontSize: 12, color: syncStatus === 'error' ? C.danger : C.textSoft, marginBottom: 12 }}>
+            {syncText(syncStatus, lastSyncedAt)}
+          </div>
+          <button type="button" onClick={onLogout} style={{ ...linkBtn, color: C.danger }}>
+            Abmelden
+          </button>
+        </div>
+      )}
     </div>
   );
 }

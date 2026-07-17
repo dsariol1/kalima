@@ -42,7 +42,7 @@ export default function BackupControls({ onExport, onImport }) {
       marginTop: '1.5rem', borderTop: `1px solid ${C.border}`, paddingTop: '1rem',
     }}>
       <div style={{ fontSize: 12, color: C.textSoft, marginBottom: 8 }}>
-        Sicherung — dein Fortschritt liegt nur lokal im Browser.
+        Manuelle Sicherung als Datei — unabhängig von der Cloud-Synchronisierung.
       </div>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         <button onClick={doExport} style={btn}>
