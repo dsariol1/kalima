@@ -1,6 +1,6 @@
 import { RATINGS, previewDueDates } from '../srs/scheduler.js';
 import { formatInterval } from '../utils/interval.js';
-import { C } from '../theme.js';
+import { C, FONT } from '../theme.js';
 
 const STYLE = {
   again: { color: C.danger, bg: C.dangerSoft },
@@ -26,8 +26,8 @@ export default function GradeButtons({ card, onGrade }) {
             cursor: 'pointer', padding: '14px 8px', fontFamily: 'inherit',
           }}
         >
-          <span style={{ fontSize: 14.5, fontWeight: 600 }}>{r.label}</span>
-          <span style={{ fontSize: 11.5, opacity: 0.75 }}>
+          <span style={{ fontSize: FONT.base, fontWeight: 600 }}>{r.label}</span>
+          <span style={{ fontSize: FONT.xs, opacity: 0.75 }}>
             {formatInterval(new Date(previews[r.key]).getTime() - now)}
           </span>
         </button>

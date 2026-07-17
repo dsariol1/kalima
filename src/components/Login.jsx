@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { login, register, requestPasswordReset } from '../auth/pocketbase.js';
-import { C, card, primaryBtn, inputStyle, fieldLabel, linkBtn } from '../theme.js';
+import { C, card, primaryBtn, inputStyle, fieldLabel, linkBtn, FONT, SPACE } from '../theme.js';
 
 // Pflicht-Gate vor der App. Drei Modi in einer Karte: Anmelden, Registrieren,
 // Passwort zurücksetzen. Nach erfolgreichem Login/Register aktualisiert der
@@ -76,14 +76,14 @@ export default function Login() {
     }}>
       <div style={{ width: '100%', maxWidth: 360 }}>
         <div style={{
-          fontFamily: 'Fraunces, serif', fontSize: 30, fontWeight: 700,
+          fontFamily: 'Fraunces, serif', fontSize: FONT.h1, fontWeight: 700,
           textAlign: 'center', marginBottom: '1.5rem', lineHeight: 1,
         }}>
           Kalima<span style={{ color: C.gold }}>+</span>
         </div>
 
         <form onSubmit={onSubmit} style={{ ...card, padding: '1.5rem' }}>
-          <h1 style={{ fontFamily: 'Fraunces, serif', fontSize: 20, fontWeight: 600, margin: '0 0 1.25rem' }}>
+          <h1 style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.xl, fontWeight: 600, margin: '0 0 1.25rem' }}>
             {TITLES[mode]}
           </h1>
 
@@ -112,7 +112,7 @@ export default function Login() {
                 style={inputStyle}
               />
               {mode === 'register' && (
-                <span style={{ ...fieldLabel, fontSize: 11.5, display: 'block', marginTop: 5 }}>
+                <span style={{ ...fieldLabel, fontSize: FONT.xs, display: 'block', marginTop: SPACE.xs }}>
                   Mindestens 8 Zeichen.
                 </span>
               )}
@@ -120,14 +120,14 @@ export default function Login() {
           )}
 
           {error && (
-            <div style={{ fontSize: 12.5, color: C.danger, marginBottom: 12 }}>{error}</div>
+            <div style={{ fontSize: FONT.sm, color: C.danger, marginBottom: SPACE.md }}>{error}</div>
           )}
           {notice && (
-            <div style={{ fontSize: 12.5, color: C.primary, marginBottom: 12 }}>{notice}</div>
+            <div style={{ fontSize: FONT.sm, color: C.primary, marginBottom: SPACE.md }}>{notice}</div>
           )}
 
           <button type="submit" disabled={busy} style={{
-            ...primaryBtn, width: '100%', padding: '11px', fontSize: 14,
+            ...primaryBtn, width: '100%', padding: '11px', fontSize: FONT.base,
             opacity: busy ? 0.6 : 1, cursor: busy ? 'default' : 'pointer',
           }}>
             {busy ? 'Bitte warten …' : TITLES[mode]}

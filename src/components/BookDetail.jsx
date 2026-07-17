@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { ArrowLeft, BookOpen, Plus, ChevronRight, ListPlus } from 'lucide-react';
 import { countDueFresh } from '../srs/cards.js';
-import { C, card, linkBtn, backBtn, pill } from '../theme.js';
+import { C, card, linkBtn, backBtn, pill, FONT, SPACE } from '../theme.js';
 
 // One book's chapters and actions — reached from BookList. "Ganzes Buch
 // üben" and each chapter row hand a scope off to ReviewSession via onStart.
@@ -15,14 +15,14 @@ export default function BookDetail({ book, progressMap, onStart, onAddWord, onBu
         <ArrowLeft size={15} /> Bücher
       </button>
 
-      <div style={{ ...card, padding: '1.1rem 1.25rem' }}>
+      <div style={{ ...card, padding: '1rem 1.25rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
           <div>
-            <div dir="rtl" style={{ fontFamily: 'Amiri, serif', fontSize: 22, lineHeight: 1.25 }}>
-              {book.title} <span style={{ fontSize: 15, color: C.textSoft }}>· {book.subtitle}</span>
+            <div dir="rtl" style={{ fontFamily: 'Amiri, serif', fontSize: FONT.arMd, lineHeight: 1.25 }}>
+              {book.title} <span style={{ fontSize: FONT.arXs, color: C.textSoft }}>· {book.subtitle}</span>
             </div>
-            <div style={{ fontSize: 13, color: C.textSoft, marginTop: 2 }}>{book.titleDe}</div>
-            <div style={{ fontSize: 12.5, color: C.textSoft, marginTop: 4 }}>{book.descDe}</div>
+            <div style={{ fontSize: FONT.sm, color: C.textSoft, marginTop: 2 }}>{book.titleDe}</div>
+            <div style={{ fontSize: FONT.sm, color: C.textSoft, marginTop: 4 }}>{book.descDe}</div>
           </div>
           <span style={pill(book.accent)}>{book.level}</span>
         </div>
@@ -32,7 +32,7 @@ export default function BookDetail({ book, progressMap, onStart, onAddWord, onBu
           style={{
             marginTop: 12, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
             background: book.accent, color: '#FFFFFF', border: 'none', borderRadius: 10,
-            padding: '9px 14px', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 500,
+            padding: '9px 14px', cursor: 'pointer', fontFamily: 'inherit', fontSize: FONT.base, fontWeight: 500,
           }}
         >
           <BookOpen size={15} />
@@ -42,7 +42,7 @@ export default function BookDetail({ book, progressMap, onStart, onAddWord, onBu
           )}
         </button>
 
-        <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div style={{ marginTop: SPACE.md, display: 'flex', flexDirection: 'column', gap: 6 }}>
           {book.units.map((u) => {
             const uc = countDueFresh(u.items, progressMap);
             return (
@@ -55,9 +55,9 @@ export default function BookDetail({ book, progressMap, onStart, onAddWord, onBu
                   padding: '8px 12px', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
                 }}
               >
-                <span style={{ fontSize: 13.5, color: C.text }}>{u.titleDe}</span>
+                <span style={{ fontSize: FONT.base, color: C.text }}>{u.titleDe}</span>
                 <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 11.5, color: C.textSoft }}>
+                  <span style={{ fontSize: FONT.xs, color: C.textSoft }}>
                     {u.items.length} Wörter{uc.due > 0 ? ` · ${uc.due} fällig` : ''}
                   </span>
                   <ChevronRight size={15} color={C.textSoft} />
@@ -67,7 +67,7 @@ export default function BookDetail({ book, progressMap, onStart, onAddWord, onBu
           })}
         </div>
 
-        <div style={{ marginTop: 10, display: 'flex', gap: 16 }}>
+        <div style={{ marginTop: SPACE.md, display: 'flex', gap: 16 }}>
           <button onClick={onAddWord} style={linkBtn}>
             <Plus size={14} /> Eigenes Wort hinzufügen
           </button>

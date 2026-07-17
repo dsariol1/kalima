@@ -1,5 +1,5 @@
 import { Delete } from 'lucide-react';
-import { C } from '../theme.js';
+import { C, FONT } from '../theme.js';
 
 // The Arabic alphabet in traditional order, plus the common hamza/alef
 // variants and ة/ى — everything needed to type a word. Harakat are omitted
@@ -16,7 +16,7 @@ const LETTERS = [
 // otherwise be nearly untypable on a laptop.
 export default function ArabicKeyboard({ onKey, onBackspace }) {
   const keyStyle = {
-    fontFamily: 'Amiri, serif', fontSize: 18, padding: '8px 0',
+    fontFamily: 'Amiri, serif', fontSize: FONT.arSm, padding: '8px 0',
     border: `1px solid ${C.border}`, borderRadius: 8,
     backgroundColor: C.surface, color: C.text, cursor: 'pointer',
   };

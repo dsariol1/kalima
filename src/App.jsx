@@ -18,7 +18,7 @@ import RootExplorer from './components/RootExplorer.jsx';
 import Login from './components/Login.jsx';
 import { pb, logout } from './auth/pocketbase.js';
 import { useSync } from './hooks/useSync.js';
-import { C, card, backBtn } from './theme.js';
+import { C, card, backBtn, FONT, SPACE } from './theme.js';
 
 // Top-level state machine: 'home' (Dashboard mit Lernwerkzeugen) ->
 // 'books' (Karteikarten-Tool) -> 'bookDetail' -> 'review' | 'add' | 'bulkAdd';
@@ -216,7 +216,7 @@ export default function App() {
         }}>
           {/* Text-Wortmarke in der Display-Schrift der Begrüßung; das
               goldene Plus ist das Markenzeichen. */}
-          <div style={{ fontFamily: 'Fraunces, serif', fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1 }}>
+          <div style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.h2, fontWeight: 700, color: C.text, lineHeight: 1 }}>
             Kalima<span style={{ color: C.gold }}>+</span>
           </div>
           {/* Harakat toggle only matters while a word is being quizzed. */}
@@ -224,7 +224,7 @@ export default function App() {
             <button
               onClick={() => setHarakat((h) => !h)}
               style={{
-                fontFamily: 'inherit', fontSize: 12, fontWeight: 500,
+                fontFamily: 'inherit', fontSize: FONT.xs, fontWeight: 500,
                 background: harakat ? C.primarySoft : 'transparent',
                 border: `1px solid ${harakat ? C.primary : C.border}`, borderRadius: 999, padding: '4px 10px',
                 color: harakat ? C.primary : C.textSoft, cursor: 'pointer',
@@ -264,7 +264,7 @@ export default function App() {
             <button onClick={() => setView('home')} style={{ ...backBtn, marginBottom: '1rem' }}>
               ← Zurück
             </button>
-            <div style={{ fontSize: 12.5, fontWeight: 500, color: C.textSoft, marginBottom: '0.6rem' }}>Bücher</div>
+            <div style={{ fontSize: FONT.sm, fontWeight: 500, color: C.textSoft, marginBottom: SPACE.sm }}>Bücher</div>
             <BookList
               tree={tree}
               progressMap={progressMap}
@@ -287,8 +287,8 @@ export default function App() {
             <button onClick={() => setView('home')} style={{ ...backBtn, marginBottom: '1rem' }}>
               ← Zurück
             </button>
-            <div style={{ ...card, padding: '1.25rem 1.5rem' }}>
-              <h2 style={{ fontFamily: 'Fraunces, serif', fontSize: 20, fontWeight: 600, margin: '0 0 0.5rem' }}>
+            <div style={{ ...card, padding: '1.25rem' }}>
+              <h2 style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.xl, fontWeight: 600, margin: '0 0 0.5rem' }}>
                 Einstellungen
               </h2>
               <Settings

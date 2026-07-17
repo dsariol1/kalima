@@ -61,7 +61,7 @@ export const card = {
 };
 
 export const primaryBtn = {
-  fontFamily: 'inherit', fontSize: 13.5, fontWeight: 500,
+  fontFamily: 'inherit', fontSize: FONT.base, fontWeight: 500,
   background: C.primary, color: '#FFFFFF', border: 'none',
   borderRadius: 10, padding: '9px 22px', cursor: 'pointer',
 };
@@ -69,22 +69,22 @@ export const primaryBtn = {
 export const linkBtn = {
   display: 'inline-flex', alignItems: 'center', gap: 6,
   background: 'none', border: 'none', color: C.gold, cursor: 'pointer',
-  fontFamily: 'inherit', fontSize: 12.5, fontWeight: 500, padding: 0,
+  fontFamily: 'inherit', fontSize: FONT.sm, fontWeight: 500, padding: 0,
 };
 
 export const backBtn = {
-  ...linkBtn, color: C.textSoft, fontSize: 13, fontWeight: 400,
+  ...linkBtn, color: C.textSoft, fontSize: FONT.sm, fontWeight: 400,
 };
 
 export const inputStyle = {
   width: '100%', boxSizing: 'border-box', padding: '9px 11px',
   border: `1px solid ${C.border}`, borderRadius: 10, backgroundColor: C.bg,
-  fontFamily: 'inherit', fontSize: 14, color: C.text, marginTop: 4,
+  fontFamily: 'inherit', fontSize: FONT.base, color: C.text, marginTop: SPACE.xs,
 };
 
-export const fieldLabel = { fontSize: 12.5, color: C.textSoft, fontWeight: 500 };
+export const fieldLabel = { fontSize: FONT.sm, color: C.textSoft, fontWeight: 500 };
 
 export const pill = (color) => ({
-  fontSize: 11, fontWeight: 500, color, border: `1px solid ${color}`,
+  fontSize: FONT.xs, fontWeight: 500, color, border: `1px solid ${color}`,
   borderRadius: 999, padding: '2px 9px', whiteSpace: 'nowrap',
 });

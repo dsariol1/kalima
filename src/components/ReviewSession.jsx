@@ -4,7 +4,7 @@ import { useReview } from '../hooks/useReview.js';
 import { vocabForScope } from '../data/books.js';
 import Flashcard from './Flashcard.jsx';
 import GradeButtons from './GradeButtons.jsx';
-import { C, card, backBtn, primaryBtn } from '../theme.js';
+import { C, card, backBtn, primaryBtn, FONT, SPACE } from '../theme.js';
 
 // A running review session for one scope. Owns nothing about scheduling —
 // that all lives in useReview / the scheduler wrapper.
@@ -30,12 +30,12 @@ export default function ReviewSession({ scope, scopeLabel, progressMap, customVo
         <button onClick={onExit} style={backBtn}>
           <ArrowLeft size={15} /> Bücher
         </button>
-        <span style={{ fontSize: 12.5, color: C.textSoft }}>{scopeLabel}</span>
+        <span style={{ fontSize: FONT.sm, color: C.textSoft }}>{scopeLabel}</span>
       </div>
 
       {!done && current ? (
         <>
-          <div style={{ fontSize: 12, color: C.textSoft, textAlign: 'center', marginBottom: 10 }}>
+          <div style={{ fontSize: FONT.xs, color: C.textSoft, textAlign: 'center', marginBottom: SPACE.sm }}>
             noch {remaining} · {stats.reviewed} wiederholt
           </div>
           <Flashcard
@@ -47,10 +47,10 @@ export default function ReviewSession({ scope, scopeLabel, progressMap, customVo
           {revealed && <GradeButtons card={currentCard} onGrade={grade} />}
         </>
       ) : (
-        <div style={{ ...card, padding: '2.5rem 1.5rem', textAlign: 'center' }}>
+        <div style={{ ...card, padding: '2rem 1.5rem', textAlign: 'center' }}>
           <Sparkles size={22} color={C.gold} style={{ marginBottom: 10 }} />
-          <div style={{ fontFamily: 'Fraunces, serif', fontSize: 19, marginBottom: 8 }}>Runde abgeschlossen</div>
-          <div style={{ fontSize: 13.5, color: C.textSoft }}>
+          <div style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.lg, marginBottom: SPACE.sm }}>Runde abgeschlossen</div>
+          <div style={{ fontSize: FONT.base, color: C.textSoft }}>
             {stats.reviewed} Karten{stats.again > 0 ? `, ${stats.again}× nochmal geübt` : ''}.
           </div>
           <button onClick={onExit} style={{ ...primaryBtn, marginTop: 16 }}>

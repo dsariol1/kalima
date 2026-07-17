@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { parseVocabLines, slugUnit } from '../utils/parseVocabList.js';
-import { C, card, backBtn, primaryBtn, inputStyle, fieldLabel } from '../theme.js';
+import { C, card, backBtn, primaryBtn, inputStyle, fieldLabel, FONT } from '../theme.js';
 
 const NEW_CHAPTER = '__new__';
 
@@ -40,8 +40,8 @@ export default function BulkAddWords({ bookId, units, onSave, onCancel }) {
       </button>
 
       <div style={{ ...card, padding: '1.25rem' }}>
-        <div style={{ fontFamily: 'Fraunces, serif', fontSize: 18, marginBottom: 4 }}>Vokabelliste einfügen</div>
-        <div style={{ fontSize: 12.5, color: C.textSoft, marginBottom: 14 }}>
+        <div style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.lg, marginBottom: 4 }}>Vokabelliste einfügen</div>
+        <div style={{ fontSize: FONT.sm, color: C.textSoft, marginBottom: 14 }}>
           Ein Wort pro Zeile: <code>Arabisch / Deutsch / Umschrift? / Wurzel? / Wurzelbedeutung?</code> —
           nur Arabisch und Deutsch sind Pflicht. Die Felder selbst dürfen kein „/" enthalten.
         </div>
@@ -79,7 +79,7 @@ export default function BulkAddWords({ bookId, units, onSave, onCancel }) {
           </div>
 
           {text.trim() && (
-            <div style={{ fontSize: 12.5, color: C.textSoft }}>
+            <div style={{ fontSize: FONT.sm, color: C.textSoft }}>
               {parsed.entries.length} Wort{parsed.entries.length === 1 ? '' : 'e'} erkannt
               {parsed.errors.length > 0 && (
                 <span style={{ color: C.danger }}>
@@ -95,7 +95,7 @@ export default function BulkAddWords({ bookId, units, onSave, onCancel }) {
           onClick={() => canSave && onSave(parsed.entries)}
           disabled={!canSave}
           style={{
-            ...primaryBtn, marginTop: 16, width: '100%', padding: '10px', fontSize: 14,
+            ...primaryBtn, marginTop: 16, width: '100%', padding: '10px', fontSize: FONT.base,
             background: canSave ? C.primary : C.surfaceMuted,
             color: canSave ? '#FFFFFF' : C.textSoft,
             cursor: canSave ? 'pointer' : 'default',

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
-import { C, card, backBtn, primaryBtn, inputStyle, fieldLabel } from '../theme.js';
+import { C, card, backBtn, primaryBtn, inputStyle, fieldLabel, FONT } from '../theme.js';
 
 // Form for adding a word from whatever lesson the learner is studying.
 // This is how the deck grows into their own material — the vocab and its
@@ -48,13 +48,13 @@ export default function AddWord({ bookId, units, onSave, onCancel }) {
       </button>
 
       <div style={{ ...card, padding: '1.25rem' }}>
-        <div style={{ fontFamily: 'Fraunces, serif', fontSize: 18, marginBottom: 14 }}>Eigenes Wort hinzufügen</div>
+        <div style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.lg, marginBottom: 14 }}>Eigenes Wort hinzufügen</div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div>
             <span style={label}>Arabisch (mit Harakat)</span>
             <input dir="rtl" value={ar} onChange={(e) => setAr(e.target.value)}
-              placeholder="مَثَلًا: دَرْس" style={{ ...inputStyle, fontFamily: 'Amiri, serif', fontSize: 20 }} />
+              placeholder="مَثَلًا: دَرْس" style={{ ...inputStyle, fontFamily: 'Amiri, serif', fontSize: FONT.arMd }} />
           </div>
           <div>
             <span style={label}>Bedeutung (Deutsch)</span>
@@ -88,7 +88,7 @@ export default function AddWord({ bookId, units, onSave, onCancel }) {
           onClick={save}
           disabled={!canSave}
           style={{
-            ...primaryBtn, marginTop: 16, width: '100%', padding: '10px', fontSize: 14,
+            ...primaryBtn, marginTop: 16, width: '100%', padding: '10px', fontSize: FONT.base,
             background: canSave ? C.primary : C.surfaceMuted,
             color: canSave ? '#FFFFFF' : C.textSoft,
             cursor: canSave ? 'pointer' : 'default',
