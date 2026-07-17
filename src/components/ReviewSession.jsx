@@ -8,7 +8,7 @@ import { C, card, backBtn, primaryBtn, FONT, SPACE } from '../theme.js';
 
 // A running review session for one scope. Owns nothing about scheduling —
 // that all lives in useReview / the scheduler wrapper.
-export default function ReviewSession({ scope, scopeLabel, progressMap, customVocab, harakat, newPerSession, onProgressChange, onExit, onExploreRoot }) {
+export default function ReviewSession({ scope, scopeLabel, exitLabel, progressMap, customVocab, harakat, newPerSession, onProgressChange, onExit, onExploreRoot }) {
   const { current, direction, currentCard, revealed, reveal, grade, stats, remaining, done } = useReview({
     scope, progressMap, customVocab, onProgressChange, newPerSession,
   });
@@ -26,11 +26,16 @@ export default function ReviewSession({ scope, scopeLabel, progressMap, customVo
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-        <button onClick={onExit} style={backBtn}>
-          <ArrowLeft size={15} /> Bücher
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+        <button onClick={onExit} style={{ ...backBtn, flexShrink: 0 }}>
+          <ArrowLeft size={15} /> {exitLabel || 'Zurück'}
         </button>
-        <span style={{ fontSize: FONT.sm, color: C.textSoft }}>{scopeLabel}</span>
+        <span style={{
+          fontSize: FONT.sm, color: C.textSoft, flex: 1, minWidth: 0, textAlign: 'right',
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+        }}>
+          {scopeLabel}
+        </span>
       </div>
 
       {!done && current ? (
@@ -54,7 +59,7 @@ export default function ReviewSession({ scope, scopeLabel, progressMap, customVo
             {stats.reviewed} Karten{stats.again > 0 ? `, ${stats.again}× nochmal geübt` : ''}.
           </div>
           <button onClick={onExit} style={{ ...primaryBtn, marginTop: 16 }}>
-            Zurück zu den Büchern
+            Zurück zum Buch
           </button>
         </div>
       )}

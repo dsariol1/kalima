@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Settings as SettingsIcon } from 'lucide-react';
+import { ArrowLeft, Settings as SettingsIcon } from 'lucide-react';
 import { buildBookTree } from './data/books.js';
 import { countDueFresh } from './srs/cards.js';
 import { loadProgress, loadCustomVocab, addCustomVocab, addCustomVocabMany, exportAll, importAll, getSetting, setSetting, reviewsToday, currentStreak } from './db/db.js';
@@ -262,7 +262,7 @@ export default function App() {
         {view === 'books' && (
           <>
             <button onClick={() => setView('home')} style={{ ...backBtn, marginBottom: '1rem' }}>
-              ← Zurück
+              <ArrowLeft size={15} /> Start
             </button>
             <div style={{ fontSize: FONT.sm, fontWeight: 500, color: C.textSoft, marginBottom: SPACE.sm }}>Bücher</div>
             <BookList
@@ -285,7 +285,7 @@ export default function App() {
         {view === 'settings' && (
           <>
             <button onClick={() => setView('home')} style={{ ...backBtn, marginBottom: '1rem' }}>
-              ← Zurück
+              <ArrowLeft size={15} /> Start
             </button>
             <div style={{ ...card, padding: '1.25rem' }}>
               <h2 style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.xl, fontWeight: 600, margin: '0 0 0.5rem' }}>
@@ -323,6 +323,7 @@ export default function App() {
           <ReviewSession
             scope={scope}
             scopeLabel={scopeLabel}
+            exitLabel={selectedBook?.titleDe || 'Buch'}
             progressMap={progressMap}
             customVocab={customVocab}
             harakat={harakat}
@@ -337,6 +338,7 @@ export default function App() {
           <AddWord
             bookId={selectedBookId}
             units={selectedBook ? selectedBook.units : []}
+            exitLabel={selectedBook?.titleDe || 'Buch'}
             onSave={saveWord}
             onCancel={() => setView('bookDetail')}
           />
@@ -346,6 +348,7 @@ export default function App() {
           <BulkAddWords
             bookId={selectedBookId}
             units={selectedBook ? selectedBook.units : []}
+            exitLabel={selectedBook?.titleDe || 'Buch'}
             onSave={saveBulkWords}
             onCancel={() => setView('bookDetail')}
           />

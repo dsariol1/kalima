@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { ArrowLeft, BookOpen, Plus, ChevronRight, ListPlus } from 'lucide-react';
+import { ArrowLeft, BookOpen, Plus, Play, ListPlus } from 'lucide-react';
 import { countDueFresh } from '../srs/cards.js';
 import { C, card, linkBtn, backBtn, pill, FONT, SPACE } from '../theme.js';
 
@@ -49,10 +49,11 @@ export default function BookDetail({ book, progressMap, onStart, onAddWord, onBu
               <button
                 key={u.id}
                 onClick={() => onStart({ bookId: book.id, unitId: u.id })}
+                aria-label={`${u.titleDe} üben`}
                 style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10,
-                  padding: '8px 12px', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
+                  minHeight: 44, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10,
+                  padding: '8px 8px 8px 12px', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
                 }}
               >
                 <span style={{ fontSize: FONT.base, color: C.text }}>{u.titleDe}</span>
@@ -60,7 +61,12 @@ export default function BookDetail({ book, progressMap, onStart, onAddWord, onBu
                   <span style={{ fontSize: FONT.xs, color: C.textSoft }}>
                     {u.items.length} Wörter{uc.due > 0 ? ` · ${uc.due} fällig` : ''}
                   </span>
-                  <ChevronRight size={15} color={C.textSoft} />
+                  <span style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    width: 28, height: 28, borderRadius: 999, backgroundColor: C.primarySoft, flexShrink: 0,
+                  }}>
+                    <Play size={12} color={C.primary} fill={C.primary} style={{ marginLeft: 1 }} />
+                  </span>
                 </span>
               </button>
             );

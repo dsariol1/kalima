@@ -1,5 +1,5 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Volume2, Plus, Minus, CheckCircle2, Sparkles } from 'lucide-react';
+import { ArrowLeft, Volume2, Plus, Minus, CheckCircle2, Sparkles } from 'lucide-react';
 import { C, card, backBtn, linkBtn, primaryBtn, pill } from '../theme.js';
 import { BUILTIN_VOCAB, BOOK_META } from '../data/books.js';
 import { ROOT_FAMILIES, ROOT_KEYS, WORD_INDEX, normalizeCitation } from '../data/rootFamilies.js';
@@ -252,7 +252,7 @@ function PatternQuiz({ onExit, onJumpToWord }) {
       )}
 
       <div style={{ textAlign: 'center', marginTop: 14 }}>
-        <button onClick={onExit} style={linkBtn}>← Zurück zum Explorer</button>
+        <button onClick={onExit} style={{ ...linkBtn, justifyContent: 'center' }}><ArrowLeft size={13} /> Zurück zum Explorer</button>
       </div>
     </div>
   );
@@ -497,7 +497,7 @@ export default function RootExplorer({ onBack, initialRootKey, initialCenterAr, 
 
   return (
     <div ref={wrapRef}>
-      <button onClick={onBack} style={{ ...backBtn, marginBottom: '0.9rem' }}>← Zurück</button>
+      <button onClick={onBack} style={{ ...backBtn, marginBottom: '0.9rem' }}><ArrowLeft size={15} /> Zurück</button>
 
       {/* Kopfzeile: Wurzel-Pills (nur in der Graph-Ansicht relevant — Muster
           und Quiz arbeiten wurzelübergreifend) + Ansichts-Umschalter. */}

@@ -5,7 +5,7 @@ import { C, card, backBtn, primaryBtn, inputStyle, fieldLabel, FONT } from '../t
 // Form for adding a word from whatever lesson the learner is studying.
 // This is how the deck grows into their own material — the vocab and its
 // meaning are the learner's own notes, stored locally in their browser.
-export default function AddWord({ bookId, units, onSave, onCancel }) {
+export default function AddWord({ bookId, units, exitLabel, onSave, onCancel }) {
   const [ar, setAr] = useState('');
   const [de, setDe] = useState('');
   const [translit, setTranslit] = useState('');
@@ -44,7 +44,7 @@ export default function AddWord({ bookId, units, onSave, onCancel }) {
   return (
     <div>
       <button onClick={onCancel} style={{ ...backBtn, marginBottom: 14 }}>
-        <ArrowLeft size={15} /> Zurück
+        <ArrowLeft size={15} /> {exitLabel || 'Zurück'}
       </button>
 
       <div style={{ ...card, padding: '1.25rem' }}>

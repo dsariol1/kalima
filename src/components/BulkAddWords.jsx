@@ -9,7 +9,7 @@ const NEW_CHAPTER = '__new__';
 // one form submission per word, for typing up a chapter from the learner's
 // own book in one go. Same fields, same "learner's own material" model —
 // this only ever writes to customVocab, never to the built-in vocab files.
-export default function BulkAddWords({ bookId, units, onSave, onCancel }) {
+export default function BulkAddWords({ bookId, units, exitLabel, onSave, onCancel }) {
   const [unit, setUnit] = useState(units[0]?.id || NEW_CHAPTER);
   const [newChapterName, setNewChapterName] = useState('');
   const [text, setText] = useState('');
@@ -36,7 +36,7 @@ export default function BulkAddWords({ bookId, units, onSave, onCancel }) {
   return (
     <div>
       <button onClick={onCancel} style={{ ...backBtn, marginBottom: 14 }}>
-        <ArrowLeft size={15} /> Zurück
+        <ArrowLeft size={15} /> {exitLabel || 'Zurück'}
       </button>
 
       <div style={{ ...card, padding: '1.25rem' }}>

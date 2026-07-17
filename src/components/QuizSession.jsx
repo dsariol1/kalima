@@ -82,7 +82,7 @@ export default function QuizSession({ allItems, progressMap, onExit, onGoFlashca
   const header = (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
       <button onClick={onExit} style={backBtn}>
-        <ArrowLeft size={15} /> Zurück
+        <ArrowLeft size={15} /> Start
       </button>
       <span style={{ fontSize: FONT.sm, color: C.textSoft, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
         <Puzzle size={14} color={C.gold} /> Quiz
