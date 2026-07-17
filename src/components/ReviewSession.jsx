@@ -4,12 +4,13 @@ import { useReview } from '../hooks/useReview.js';
 import { vocabForScope } from '../data/books.js';
 import Flashcard from './Flashcard.jsx';
 import GradeButtons from './GradeButtons.jsx';
+import ProgressBar from './ProgressBar.jsx';
 import { C, card, backBtn, primaryBtn, FONT, SPACE } from '../theme.js';
 
 // A running review session for one scope. Owns nothing about scheduling —
 // that all lives in useReview / the scheduler wrapper.
 export default function ReviewSession({ scope, scopeLabel, exitLabel, progressMap, customVocab, harakat, newPerSession, onProgressChange, onExit, onExploreRoot }) {
-  const { current, direction, currentCard, revealed, reveal, grade, stats, remaining, done } = useReview({
+  const { current, direction, currentCard, revealed, reveal, grade, stats, remaining, total, done } = useReview({
     scope, progressMap, customVocab, onProgressChange, newPerSession,
   });
   // Lives here (not in Flashcard, which remounts per card) so it stays open
@@ -40,7 +41,8 @@ export default function ReviewSession({ scope, scopeLabel, exitLabel, progressMa
 
       {!done && current ? (
         <>
-          <div style={{ fontSize: FONT.xs, color: C.textSoft, textAlign: 'center', marginBottom: SPACE.sm }}>
+          <ProgressBar pct={total > 0 ? (total - remaining) / total : 0} />
+          <div style={{ fontSize: FONT.xs, color: C.textSoft, textAlign: 'center', marginTop: 8, marginBottom: SPACE.sm }}>
             noch {remaining} · {stats.reviewed} wiederholt
           </div>
           <Flashcard

@@ -17,6 +17,9 @@ export function useReview({ scope, progressMap, customVocab, onProgressChange, n
   // Local working copy of card state so we don't wait on Dexie between cards.
   // Keyed by the composite `${vocabId}::${direction}` id.
   const cardState = useRef({});
+  // Größe der Runde bei Start — Nenner für den Fortschrittsbalken. Ein Ref,
+  // weil er nur beim Aufbau der Queue gesetzt wird, nicht bei jeder Karte.
+  const initialTotal = useRef(0);
 
   const vocab = useMemo(
     () => vocabForScope(scope, customVocab),
@@ -49,11 +52,13 @@ export function useReview({ scope, progressMap, customVocab, onProgressChange, n
         }
       }
     }
-    setQueue([
+    const initialQueue = [
       ...due,
       ...freshRecognition.slice(0, newPerSession),
       ...freshProduction.slice(0, newPerSession),
-    ]);
+    ];
+    setQueue(initialQueue);
+    initialTotal.current = initialQueue.length;
     setStats({ reviewed: 0, again: 0 });
     setRevealed(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -109,6 +114,7 @@ export function useReview({ scope, progressMap, customVocab, onProgressChange, n
     grade,
     stats,
     remaining: queue.length,
+    total: initialTotal.current,
     done: queue.length === 0,
   };
 }

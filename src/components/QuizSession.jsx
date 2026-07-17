@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { ArrowLeft, Puzzle, Sparkles } from 'lucide-react';
 import { cardId, isUnlocked } from '../srs/cards.js';
 import { C, card, backBtn, primaryBtn, FONT, SPACE } from '../theme.js';
+import ProgressBar from './ProgressBar.jsx';
 
 // Multiple-Choice-Quiz über bereits gelernte Wörter (Recognition-Karte
 // mindestens einmal bewertet). Bewusst OHNE Scheduler- und Persistenz-
@@ -150,7 +151,8 @@ export default function QuizSession({ allItems, progressMap, onExit, onGoFlashca
     <div>
       {header}
       <div style={{ ...card, padding: '1.25rem' }}>
-        <div style={{ fontSize: FONT.sm, color: C.textSoft, textAlign: 'center', marginBottom: SPACE.lg }}>
+        <ProgressBar pct={index / round.length} />
+        <div style={{ fontSize: FONT.sm, color: C.textSoft, textAlign: 'center', margin: `8px 0 ${SPACE.lg}px` }}>
           Frage {index + 1}/{round.length} · {correct} richtig
         </div>
 

@@ -122,4 +122,5 @@ select:focus-visible {
   }
 
   .goal-ring-progress { transition: stroke-dashoffset 0.6s ease; }
+  .progress-bar-fill { transition: width 0.25s ease; }
 }
