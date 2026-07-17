@@ -1,11 +1,14 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, Sparkles } from 'lucide-react';
 import { useReview } from '../hooks/useReview.js';
 import { vocabForScope } from '../data/books.js';
+import { RATINGS } from '../srs/scheduler.js';
 import Flashcard from './Flashcard.jsx';
 import GradeButtons from './GradeButtons.jsx';
 import ProgressBar from './ProgressBar.jsx';
 import { C, card, backBtn, primaryBtn, FONT, SPACE } from '../theme.js';
+
+const FIELD_TAGS = new Set(['INPUT', 'TEXTAREA', 'SELECT']);
 
 // A running review session for one scope. Owns nothing about scheduling —
 // that all lives in useReview / the scheduler wrapper.
@@ -24,6 +27,30 @@ export default function ReviewSession({ scope, scopeLabel, exitLabel, progressMa
     const key = current.root.join('');
     return scopeVocab.filter((v) => v.id !== current.id && v.root && v.root.join('') === key);
   }, [current, scopeVocab]);
+
+  // Anki-Konvention: Leertaste deckt auf, 1/2 bewerten. Nur bei der
+  // Erkennen-Richtung — bei Produzieren tippt man in ein fokussiertes
+  // Eingabefeld, das Leerzeichen/Ziffern selbst braucht (Enter prüft dort
+  // bereits die Antwort). FIELD_TAGS blendet die Shortcuts zusätzlich aus,
+  // solange irgendein Eingabefeld fokussiert ist.
+  useEffect(() => {
+    if (!current) return;
+    const onKeyDown = (e) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (FIELD_TAGS.has(document.activeElement?.tagName)) return;
+      if (!revealed) {
+        if (e.key === ' ' && direction === 'recognition') {
+          e.preventDefault();
+          reveal();
+        }
+        return;
+      }
+      if (e.key === '1') { e.preventDefault(); grade(RATINGS[0].grade); }
+      else if (e.key === '2') { e.preventDefault(); grade(RATINGS[1].grade); }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [current, direction, revealed, reveal, grade]);
 
   return (
     <div>
