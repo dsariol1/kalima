@@ -1,4 +1,4 @@
-import { ChevronRight, Flame, Layers, Puzzle } from 'lucide-react';
+import { ChevronRight, Flame, Layers, Puzzle, Sprout } from 'lucide-react';
 import { C, card, pill, FONT, SPACE } from '../theme.js';
 
 // Startseite: Begrüßung, Tagesfortschritt (Ziel-Ring + Streak) und die
@@ -30,10 +30,13 @@ function GoalRing({ done, goal }) {
         />
       </svg>
       <span style={{
-        position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontFamily: 'Fraunces, serif', fontSize: FONT.lg, fontWeight: 600, color: C.primary,
+        position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center', lineHeight: 1.1,
       }}>
-        {done}
+        <span style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.lg, fontWeight: 600, color: C.primary }}>
+          {done}
+        </span>
+        <span style={{ fontSize: 9, color: C.textSoft }}>heute</span>
       </span>
     </div>
   );
@@ -90,7 +93,12 @@ function ToolCard({ tool }) {
   );
 }
 
-export default function Dashboard({ todayTotals, doneToday, streak, onOpenFlashcards, onOpenQuiz, onOpenExplorer }) {
+// Deckt sich mit QuizSession.MIN_POOL — hier nur fürs Badge, kein Import
+// nötig, weil rein informativ (QuizSession selbst prüft die Schwelle noch
+// einmal beim Rundenaufbau).
+const QUIZ_MIN_POOL = 4;
+
+export default function Dashboard({ todayTotals, doneToday, streak, quizPoolSize, onOpenFlashcards, onOpenQuiz, onOpenExplorer }) {
   const hour = new Date().getHours();
   const greeting = hour < 11 ? 'Guten Morgen' : hour < 18 ? 'Guten Tag' : 'Guten Abend';
 
@@ -104,8 +112,14 @@ export default function Dashboard({ todayTotals, doneToday, streak, onOpenFlashc
     {
       id: 'quiz', name: 'Quiz', desc: 'Multiple-Choice mit bereits gelernten Wörtern.',
       icon: Puzzle, iconColor: C.gold, iconBg: C.goldSoft,
-      badge: null, badgeColor: C.gold,
+      badge: quizPoolSize >= QUIZ_MIN_POOL ? `${quizPoolSize} Wörter` : null, badgeColor: C.gold,
       onOpen: onOpenQuiz,
+    },
+    {
+      id: 'explorer', name: 'Wurzel-Explorer', desc: 'Wurzelfamilien und Muster erkunden.',
+      icon: Sprout, iconColor: C.textSoft, iconBg: C.surfaceMuted,
+      badge: 'Beta', badgeColor: C.textSoft,
+      onOpen: onOpenExplorer,
     },
   ];
 
@@ -140,19 +154,6 @@ export default function Dashboard({ todayTotals, doneToday, streak, onOpenFlashc
 
       <div style={{ fontSize: FONT.sm, fontWeight: 500, color: C.textSoft, marginBottom: SPACE.sm }}>Lernwerkzeuge</div>
       {tools.map((tool) => <ToolCard key={tool.id} tool={tool} />)}
-
-      {/* Prototyp — vier Demo-Wurzeln (ك ت ب, د ر س, ع م ل, س ك ن). */}
-      <div style={{ textAlign: 'center', marginTop: '1.25rem' }}>
-        <button
-          onClick={onOpenExplorer}
-          style={{
-            background: 'none', border: 'none', color: C.gold, cursor: 'pointer',
-            fontFamily: 'inherit', fontSize: FONT.sm, fontWeight: 500,
-          }}
-        >
-          Wurzel-Explorer (Beta) →
-        </button>
-      </div>
     </>
   );
 }

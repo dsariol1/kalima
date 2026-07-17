@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { ArrowLeft, Settings as SettingsIcon } from 'lucide-react';
 import { buildBookTree } from './data/books.js';
-import { countDueFresh } from './srs/cards.js';
+import { cardId, countDueFresh, isUnlocked } from './srs/cards.js';
 import { loadProgress, loadCustomVocab, addCustomVocab, addCustomVocabMany, exportAll, importAll, getSetting, setSetting, reviewsToday, currentStreak } from './db/db.js';
 import { DEFAULT_RETENTION, setRetention as configureRetention } from './srs/scheduler.js';
 import { DEFAULT_NEW_PER_SESSION } from './hooks/useReview.js';
@@ -94,6 +94,13 @@ export default function App() {
   const todayTotals = useMemo(() => {
     if (!progressMap) return { due: 0, fresh: 0 };
     return countDueFresh(allItems, progressMap);
+  }, [allItems, progressMap]);
+
+  // Gleiches Gating wie QuizSession: Recognition-Karte mindestens einmal
+  // bewertet. Nur fürs Dashboard-Badge — die Quiz-Logik selbst bleibt dort.
+  const quizPoolSize = useMemo(() => {
+    if (!progressMap) return 0;
+    return allItems.filter((v) => isUnlocked('production', progressMap[cardId(v.id, 'recognition')])).length;
   }, [allItems, progressMap]);
 
   // Ring + Streak bei jeder Rückkehr auf die Startseite neu laden — nach
@@ -263,6 +270,7 @@ export default function App() {
             todayTotals={todayTotals}
             doneToday={doneToday}
             streak={streak}
+            quizPoolSize={quizPoolSize}
             onOpenFlashcards={() => setView('books')}
             onOpenQuiz={() => setView('quiz')}
             onOpenExplorer={() => openRootExplorer()}
