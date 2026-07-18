@@ -7,6 +7,7 @@ export const en = {
     back: 'Back',
     start: 'Start',
     book: 'Book',
+    cancel: 'Cancel',
     words: { one: '{count} word', other: '{count} words' },
   },
 
@@ -30,6 +31,14 @@ export const en = {
     newPerSessionHint: '(per direction)',
     account: 'Account',
     logout: 'Sign out',
+    changePassword: {
+      trigger: 'Change password',
+      old: 'Current password',
+      new: 'New password',
+      confirm: 'Confirm new password',
+      submit: 'Change password',
+      done: 'Password changed.',
+    },
     sync: {
       syncing: 'Syncing …',
       error: 'Offline — changes stay saved locally.',

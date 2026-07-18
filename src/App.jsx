@@ -16,7 +16,7 @@ import BackupControls from './components/BackupControls.jsx';
 import Settings from './components/Settings.jsx';
 import RootExplorer from './components/RootExplorer.jsx';
 import Login from './components/Login.jsx';
-import { pb, logout } from './auth/pocketbase.js';
+import { pb, logout, changePassword } from './auth/pocketbase.js';
 import { useSync } from './hooks/useSync.js';
 import { LangProvider, DEFAULT_LANG, makeT } from './i18n/i18n.jsx';
 import { bookTitle } from './i18n/content.js';
@@ -350,6 +350,7 @@ export default function App() {
                 lastSyncedAt={sync.lastSyncedAt}
                 userEmail={pb.authStore.record?.email}
                 onLogout={logout}
+                onChangePassword={pb.authStore.isValid ? changePassword : undefined}
               />
               <BackupControls onExport={handleExport} onImport={handleImport} />
             </div>

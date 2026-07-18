@@ -65,6 +65,11 @@ export async function confirmPasswordReset(token, password, passwordConfirm) {
   return pb.collection('users').confirmPasswordReset(token, password, passwordConfirm);
 }
 
+export async function changePassword(oldPassword, password, passwordConfirm) {
+  const userId = pb.authStore.record.id;
+  return pb.collection('users').update(userId, { oldPassword, password, passwordConfirm });
+}
+
 export function isLoggedIn() {
   return pb.authStore.isValid;
 }

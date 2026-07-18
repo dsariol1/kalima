@@ -7,6 +7,7 @@ export const de = {
     back: 'Zurück',
     start: 'Start',
     book: 'Buch',
+    cancel: 'Abbrechen',
     words: { one: '{count} Wort', other: '{count} Wörter' },
   },
 
@@ -30,6 +31,14 @@ export const de = {
     newPerSessionHint: '(je Richtung)',
     account: 'Konto',
     logout: 'Abmelden',
+    changePassword: {
+      trigger: 'Passwort ändern',
+      old: 'Aktuelles Passwort',
+      new: 'Neues Passwort',
+      confirm: 'Neues Passwort bestätigen',
+      submit: 'Passwort ändern',
+      done: 'Passwort geändert.',
+    },
     sync: {
       syncing: 'Wird synchronisiert …',
       error: 'Offline — Änderungen bleiben lokal gespeichert.',

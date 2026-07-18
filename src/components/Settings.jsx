@@ -1,4 +1,5 @@
-import { C, inputStyle, linkBtn, FONT, SPACE } from '../theme.js';
+import { useState } from 'react';
+import { C, inputStyle, primaryBtn, linkBtn, FONT, SPACE } from '../theme.js';
 import { useT } from '../i18n/i18n.jsx';
 
 const RETENTION_MIN = 70;
@@ -45,12 +46,116 @@ function PillGroup({ options, value, onChange }) {
   );
 }
 
+// Eigenständiges Formular mit lokalem State (analog Login.jsx), damit Settings
+// selbst keine Auth-Logik kennen muss — onChangePassword kommt aus App.jsx und
+// ruft direkt auth/pocketbase.js auf.
+function ChangePasswordForm({ onChangePassword }) {
+  const { t } = useT();
+  const [open, setOpen] = useState(false);
+  const [oldPassword, setOldPassword] = useState('');
+  const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(null);
+  const [notice, setNotice] = useState(null);
+
+  const reset = () => {
+    setOldPassword('');
+    setPassword('');
+    setPasswordConfirm('');
+  };
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    setBusy(true);
+    setError(null);
+    setNotice(null);
+    try {
+      await onChangePassword(oldPassword, password, passwordConfirm);
+      setNotice(t('settings.changePassword.done'));
+      reset();
+      setOpen(false);
+    } catch (err) {
+      const data = err?.response?.data;
+      const first = data && typeof data === 'object' ? Object.values(data)[0] : null;
+      setError(first?.message || err?.message || t('login.errors.generic'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (!open) {
+    return (
+      <>
+        {notice && <div style={{ fontSize: FONT.sm, color: C.primary, marginBottom: SPACE.xs }}>{notice}</div>}
+        <button type="button" style={linkBtn} onClick={() => { setOpen(true); setNotice(null); }}>
+          {t('settings.changePassword.trigger')}
+        </button>
+      </>
+    );
+  }
+
+  return (
+    <form onSubmit={onSubmit} style={{ marginTop: SPACE.sm }}>
+      <label style={{ display: 'block', marginBottom: 10 }}>
+        <span style={label}>{t('settings.changePassword.old')}</span>
+        <input
+          type="password"
+          autoComplete="current-password"
+          required
+          value={oldPassword}
+          onChange={(e) => setOldPassword(e.target.value)}
+          style={inputStyle}
+        />
+      </label>
+      <label style={{ display: 'block', marginBottom: 10 }}>
+        <span style={label}>{t('settings.changePassword.new')}</span>
+        <input
+          type="password"
+          autoComplete="new-password"
+          required
+          minLength={8}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          style={inputStyle}
+        />
+      </label>
+      <label style={{ display: 'block', marginBottom: 10 }}>
+        <span style={label}>{t('settings.changePassword.confirm')}</span>
+        <input
+          type="password"
+          autoComplete="new-password"
+          required
+          minLength={8}
+          value={passwordConfirm}
+          onChange={(e) => setPasswordConfirm(e.target.value)}
+          style={inputStyle}
+        />
+      </label>
+
+      {error && <div style={{ fontSize: FONT.sm, color: C.danger, marginBottom: SPACE.sm }}>{error}</div>}
+
+      <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        <button type="submit" disabled={busy} style={{
+          ...primaryBtn, padding: '8px 16px', fontSize: FONT.sm,
+          opacity: busy ? 0.6 : 1, cursor: busy ? 'default' : 'pointer',
+        }}>
+          {busy ? t('login.pleaseWait') : t('settings.changePassword.submit')}
+        </button>
+        <button type="button" style={{ ...linkBtn, color: C.textSoft }} onClick={() => { setOpen(false); setError(null); reset(); }}>
+          {t('common.cancel')}
+        </button>
+      </div>
+    </form>
+  );
+}
+
 // User-tunable FSRS knobs. Persisted via setSetting in db.js; retention also
 // needs to reach the scheduler itself (see App.jsx's onRetentionChange).
 export default function Settings({
   retention, newPerSession, theme, lang,
   onRetentionChange, onNewPerSessionChange, onThemeChange, onLangChange,
-  syncStatus, lastSyncedAt, userEmail, onLogout,
+  syncStatus, lastSyncedAt, userEmail, onLogout, onChangePassword,
 }) {
   const { t } = useT();
   const retentionPct = Math.round(retention * 100);
@@ -114,6 +219,11 @@ export default function Settings({
           <div style={{ fontSize: FONT.xs, color: syncStatus === 'error' ? C.danger : C.textSoft, marginBottom: SPACE.md }}>
             {syncText(t, lang, syncStatus, lastSyncedAt)}
           </div>
+          {onChangePassword && (
+            <div style={{ marginBottom: SPACE.md }}>
+              <ChangePasswordForm onChangePassword={onChangePassword} />
+            </div>
+          )}
           <button type="button" onClick={onLogout} style={{ ...linkBtn, color: C.danger }}>
             {t('settings.logout')}
           </button>
