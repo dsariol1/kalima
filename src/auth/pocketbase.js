@@ -61,6 +61,10 @@ export async function requestPasswordReset(email) {
   return pb.collection('users').requestPasswordReset(email);
 }
 
+export async function confirmPasswordReset(token, password, passwordConfirm) {
+  return pb.collection('users').confirmPasswordReset(token, password, passwordConfirm);
+}
+
 export function isLoggedIn() {
   return pb.authStore.isValid;
 }

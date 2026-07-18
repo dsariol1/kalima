@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
-import { login, register, requestPasswordReset } from '../auth/pocketbase.js';
+import { login, register, requestPasswordReset, confirmPasswordReset } from '../auth/pocketbase.js';
 import { useT } from '../i18n/i18n.jsx';
 import { C, card, primaryBtn, inputStyle, fieldLabel, linkBtn, FONT, SPACE } from '../theme.js';
 
@@ -22,11 +22,27 @@ function errorText(t, e, mode) {
   return e?.message || t('login.errors.generic');
 }
 
+// PocketBase-Mail-Link landet mit ?token=... auf der App-Root. Token einmalig
+// aus der URL lesen und sofort entfernen, damit ein Reload nicht erneut in
+// den Confirm-Modus springt.
+function readResetToken() {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+  if (token) {
+    params.delete('token');
+    const query = params.toString();
+    window.history.replaceState({}, '', window.location.pathname + (query ? `?${query}` : ''));
+  }
+  return token;
+}
+
 export default function Login() {
   const { t } = useT();
-  const [mode, setMode] = useState('login');
+  const [resetToken] = useState(readResetToken);
+  const [mode, setMode] = useState(resetToken ? 'resetConfirm' : 'login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
@@ -48,6 +64,12 @@ export default function Login() {
         await login(email, password);
       } else if (mode === 'register') {
         await register(email, password);
+      } else if (mode === 'resetConfirm') {
+        await confirmPasswordReset(resetToken, password, passwordConfirm);
+        setNotice(t('login.resetDone'));
+        setMode('login');
+        setPassword('');
+        setPasswordConfirm('');
       } else {
         await requestPasswordReset(email);
         setNotice(t('login.resetSent'));
@@ -85,17 +107,19 @@ export default function Login() {
             {t(`login.titles.${mode}`)}
           </h1>
 
-          <label style={{ display: 'block', marginBottom: 14 }}>
-            <span style={fieldLabel}>{t('login.email')}</span>
-            <input
-              type="email"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              style={inputStyle}
-            />
-          </label>
+          {mode !== 'resetConfirm' && (
+            <label style={{ display: 'block', marginBottom: 14 }}>
+              <span style={fieldLabel}>{t('login.email')}</span>
+              <input
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                style={inputStyle}
+              />
+            </label>
+          )}
 
           {mode !== 'reset' && (
             <label style={{ display: 'block', marginBottom: 14 }}>
@@ -123,11 +147,26 @@ export default function Login() {
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
-              {mode === 'register' && (
+              {(mode === 'register' || mode === 'resetConfirm') && (
                 <span style={{ ...fieldLabel, fontSize: FONT.xs, display: 'block', marginTop: SPACE.xs }}>
                   {t('login.minChars')}
                 </span>
               )}
+            </label>
+          )}
+
+          {mode === 'resetConfirm' && (
+            <label style={{ display: 'block', marginBottom: 14 }}>
+              <span style={fieldLabel}>{t('login.passwordConfirm')}</span>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                autoComplete="new-password"
+                required
+                minLength={8}
+                value={passwordConfirm}
+                onChange={(e) => setPasswordConfirm(e.target.value)}
+                style={inputStyle}
+              />
             </label>
           )}
 

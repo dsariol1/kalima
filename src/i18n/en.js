@@ -138,9 +138,10 @@ export const en = {
   },
 
   login: {
-    titles: { login: 'Sign in', register: 'Create account', reset: 'Reset password' },
+    titles: { login: 'Sign in', register: 'Create account', reset: 'Reset password', resetConfirm: 'Set new password' },
     email: 'Email',
     password: 'Password',
+    passwordConfirm: 'Confirm password',
     minChars: 'At least 8 characters.',
     showPassword: 'Show password',
     hidePassword: 'Hide password',
@@ -149,6 +150,7 @@ export const en = {
     forgotPassword: 'Forgot password?',
     backToLogin: '← Back to sign in',
     resetSent: 'If an account exists for this email, a reset link has been sent.',
+    resetDone: 'Password changed. You can now sign in.',
     registerConfirm: 'Account created. Please confirm your email address first.',
     errors: {
       noConnection: 'No connection to the server. Please try again later.',

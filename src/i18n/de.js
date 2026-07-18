@@ -139,9 +139,10 @@ export const de = {
   },
 
   login: {
-    titles: { login: 'Anmelden', register: 'Konto erstellen', reset: 'Passwort zurücksetzen' },
+    titles: { login: 'Anmelden', register: 'Konto erstellen', reset: 'Passwort zurücksetzen', resetConfirm: 'Neues Passwort festlegen' },
     email: 'E-Mail',
     password: 'Passwort',
+    passwordConfirm: 'Passwort bestätigen',
     minChars: 'Mindestens 8 Zeichen.',
     showPassword: 'Passwort anzeigen',
     hidePassword: 'Passwort verbergen',
@@ -150,6 +151,7 @@ export const de = {
     forgotPassword: 'Passwort vergessen?',
     backToLogin: '← Zurück zur Anmeldung',
     resetSent: 'Falls ein Konto zu dieser E-Mail existiert, wurde ein Link zum Zurücksetzen gesendet.',
+    resetDone: 'Passwort geändert. Du kannst dich jetzt anmelden.',
     registerConfirm: 'Konto erstellt. Bitte bestätige zuerst deine E-Mail-Adresse.',
     errors: {
       noConnection: 'Keine Verbindung zum Server. Bitte später erneut versuchen.',
