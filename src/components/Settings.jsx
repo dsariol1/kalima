@@ -1,4 +1,5 @@
 import { C, inputStyle, linkBtn, FONT, SPACE } from '../theme.js';
+import { useT } from '../i18n/i18n.jsx';
 
 const RETENTION_MIN = 70;
 const RETENTION_MAX = 97;
@@ -8,59 +9,74 @@ const NEW_PER_SESSION_MAX = 50;
 const label = { display: 'block', fontSize: FONT.sm, color: C.text, marginBottom: SPACE.sm };
 const rowValue = { color: C.textSoft, fontWeight: 400 };
 
-function syncText(status, lastSyncedAt) {
-  if (status === 'syncing') return 'Wird synchronisiert …';
-  if (status === 'error') return 'Offline — Änderungen bleiben lokal gespeichert.';
+function syncText(t, lang, status, lastSyncedAt) {
+  if (status === 'syncing') return t('settings.sync.syncing');
+  if (status === 'error') return t('settings.sync.error');
   if (lastSyncedAt) {
-    const t = lastSyncedAt.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
-    return `Synchronisiert · ${t}`;
+    const time = lastSyncedAt.toLocaleTimeString(lang === 'en' ? 'en-GB' : 'de-DE', { hour: '2-digit', minute: '2-digit' });
+    return t('settings.sync.syncedAt', { time });
   }
-  return 'Synchronisiert';
+  return t('settings.sync.synced');
 }
 
-const THEME_OPTIONS = [
-  { value: 'system', label: 'System' },
-  { value: 'light', label: 'Hell' },
-  { value: 'dark', label: 'Dunkel' },
-];
+// Wiederverwendbare Pill-Auswahl (Theme + Sprache teilen die Optik).
+function PillGroup({ options, value, onChange }) {
+  return (
+    <div style={{ display: 'flex', gap: 8, marginBottom: 18 }}>
+      {options.map((opt) => {
+        const active = value === opt.value;
+        return (
+          <button
+            key={opt.value}
+            onClick={() => onChange(opt.value)}
+            aria-pressed={active}
+            style={{
+              fontFamily: 'inherit', fontSize: FONT.sm, fontWeight: 500, minHeight: 40,
+              background: active ? C.primarySoft : 'transparent',
+              border: `1px solid ${active ? C.primary : C.border}`, borderRadius: 999,
+              padding: '5px 16px', color: active ? C.primary : C.textSoft, cursor: 'pointer',
+            }}
+          >
+            {opt.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 // User-tunable FSRS knobs. Persisted via setSetting in db.js; retention also
 // needs to reach the scheduler itself (see App.jsx's onRetentionChange).
 export default function Settings({
-  retention, newPerSession, theme,
-  onRetentionChange, onNewPerSessionChange, onThemeChange,
+  retention, newPerSession, theme, lang,
+  onRetentionChange, onNewPerSessionChange, onThemeChange, onLangChange,
   syncStatus, lastSyncedAt, userEmail, onLogout,
 }) {
+  const { t } = useT();
   const retentionPct = Math.round(retention * 100);
+
+  const themeOptions = [
+    { value: 'system', label: t('settings.theme.system') },
+    { value: 'light', label: t('settings.theme.light') },
+    { value: 'dark', label: t('settings.theme.dark') },
+  ];
+  const langOptions = [
+    { value: 'de', label: 'Deutsch' },
+    { value: 'en', label: 'English' },
+  ];
 
   return (
     // Leads inside the settings card (App.jsx renders the heading), so no
     // top divider of its own.
     <div style={{ paddingTop: '0.5rem' }}>
-      <span style={label}>Darstellung</span>
-      <div style={{ display: 'flex', gap: 8, marginBottom: 18 }}>
-        {THEME_OPTIONS.map((opt) => {
-          const active = theme === opt.value;
-          return (
-            <button
-              key={opt.value}
-              onClick={() => onThemeChange(opt.value)}
-              aria-pressed={active}
-              style={{
-                fontFamily: 'inherit', fontSize: FONT.sm, fontWeight: 500, minHeight: 40,
-                background: active ? C.primarySoft : 'transparent',
-                border: `1px solid ${active ? C.primary : C.border}`, borderRadius: 999,
-                padding: '5px 16px', color: active ? C.primary : C.textSoft, cursor: 'pointer',
-              }}
-            >
-              {opt.label}
-            </button>
-          );
-        })}
-      </div>
+      <span style={label}>{t('settings.language')}</span>
+      <PillGroup options={langOptions} value={lang} onChange={onLangChange} />
+
+      <span style={label}>{t('settings.appearance')}</span>
+      <PillGroup options={themeOptions} value={theme} onChange={onThemeChange} />
 
       <label style={label}>
-        Ziel-Behaltensrate <span style={rowValue}>· {retentionPct}%</span>
+        {t('settings.retention')} <span style={rowValue}>· {retentionPct}%</span>
         <input
           type="range"
           min={RETENTION_MIN}
@@ -73,7 +89,7 @@ export default function Settings({
       </label>
 
       <label style={{ ...label, marginBottom: 0 }}>
-        Neue Karten pro Sitzung <span style={rowValue}>(je Richtung)</span>
+        {t('settings.newPerSession')} <span style={rowValue}>{t('settings.newPerSessionHint')}</span>
         <input
           type="number"
           min={NEW_PER_SESSION_MIN}
@@ -91,15 +107,15 @@ export default function Settings({
 
       {onLogout && (
         <div style={{ marginTop: '1.5rem', borderTop: `1px solid ${C.border}`, paddingTop: '1rem' }}>
-          <span style={label}>Konto</span>
+          <span style={label}>{t('settings.account')}</span>
           {userEmail && (
             <div style={{ fontSize: FONT.sm, color: C.text, marginBottom: SPACE.xs }}>{userEmail}</div>
           )}
           <div style={{ fontSize: FONT.xs, color: syncStatus === 'error' ? C.danger : C.textSoft, marginBottom: SPACE.md }}>
-            {syncText(syncStatus, lastSyncedAt)}
+            {syncText(t, lang, syncStatus, lastSyncedAt)}
           </div>
           <button type="button" onClick={onLogout} style={{ ...linkBtn, color: C.danger }}>
-            Abmelden
+            {t('settings.logout')}
           </button>
         </div>
       )}

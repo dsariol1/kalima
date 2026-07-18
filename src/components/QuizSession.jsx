@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import { ArrowLeft, Puzzle, Sparkles } from 'lucide-react';
 import { cardId, isUnlocked } from '../srs/cards.js';
+import { useT, useLang } from '../i18n/i18n.jsx';
+import { meaning } from '../i18n/content.js';
 import { C, card, backBtn, primaryBtn, FONT, SPACE } from '../theme.js';
 import ProgressBar from './ProgressBar.jsx';
 
@@ -25,11 +27,11 @@ function shuffle(arr) {
 // Distraktoren gestuft (gleiches Buch + Wortart → gleiches Buch → Rest),
 // dedupliziert auf den ANTWORTTEXT (de bzw. bare) — Synonyme über Bücher
 // hinweg dürfen nie als zwei identisch lautende Optionen auftauchen.
-function buildRound(pool) {
+function buildRound(pool, lang) {
   const targets = shuffle(pool).slice(0, Math.min(ROUND_LENGTH, pool.length));
   return targets.map((target) => {
     const direction = Math.random() < 0.5 ? 'ar2de' : 'de2ar';
-    const answerText = (w) => (direction === 'ar2de' ? w.de : w.bare);
+    const answerText = (w) => (direction === 'ar2de' ? meaning(w, lang) : w.bare);
     const rest = pool.filter((w) => w.id !== target.id);
     const buckets = [
       shuffle(rest.filter((w) => w.bookId === target.bookId && w.pos === target.pos)),
@@ -52,15 +54,18 @@ function buildRound(pool) {
   });
 }
 
-function resultLine(correct, total) {
+// Score-Stufe als Übersetzungs-Schlüssel (Text kommt aus den i18n-Dicts).
+function resultKey(correct, total) {
   const pct = total > 0 ? correct / total : 0;
-  if (pct === 1) return 'Perfekt — alles richtig!';
-  if (pct >= 0.7) return 'Stark, weiter so!';
-  if (pct >= 0.4) return 'Gut geübt — Wiederholung lohnt sich.';
-  return 'Dranbleiben — Wiederholung macht den Unterschied.';
+  if (pct === 1) return 'quiz.result.perfect';
+  if (pct >= 0.7) return 'quiz.result.strong';
+  if (pct >= 0.4) return 'quiz.result.good';
+  return 'quiz.result.keepGoing';
 }
 
 export default function QuizSession({ allItems, progressMap, onExit, onGoFlashcards }) {
+  const { t } = useT();
+  const lang = useLang();
   // Gelernt-Pool über das bestehende Gating: isUnlocked('production', …)
   // ist exakt "Recognition-Karte mindestens einmal bewertet".
   const pool = useMemo(
@@ -68,13 +73,13 @@ export default function QuizSession({ allItems, progressMap, onExit, onGoFlashca
     [allItems, progressMap]
   );
 
-  const [round, setRound] = useState(() => (pool.length >= MIN_POOL ? buildRound(pool) : []));
+  const [round, setRound] = useState(() => (pool.length >= MIN_POOL ? buildRound(pool, lang) : []));
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState(null);
   const [correct, setCorrect] = useState(0);
 
   const restart = () => {
-    setRound(buildRound(pool));
+    setRound(buildRound(pool, lang));
     setIndex(0);
     setSelected(null);
     setCorrect(0);
@@ -83,10 +88,10 @@ export default function QuizSession({ allItems, progressMap, onExit, onGoFlashca
   const header = (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
       <button onClick={onExit} style={backBtn}>
-        <ArrowLeft size={15} /> Start
+        <ArrowLeft size={15} /> {t('common.start')}
       </button>
       <span style={{ fontSize: FONT.sm, color: C.textSoft, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-        <Puzzle size={14} color={C.gold} /> Quiz
+        <Puzzle size={14} color={C.gold} /> {t('quiz.label')}
       </span>
     </div>
   );
@@ -98,15 +103,13 @@ export default function QuizSession({ allItems, progressMap, onExit, onGoFlashca
         <div style={{ ...card, padding: '2rem 1.5rem', textAlign: 'center' }}>
           <Puzzle size={22} color={C.gold} style={{ marginBottom: 10 }} />
           <div style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.lg, marginBottom: SPACE.sm }}>
-            Noch nicht genug gelernte Wörter
+            {t('quiz.notEnoughTitle')}
           </div>
           <div style={{ fontSize: FONT.base, color: C.textSoft }}>
-            Das Quiz fragt nur Wörter ab, die du schon in den Karteikarten
-            gesehen hast. Wiederhole zuerst ein paar Karten — ab {MIN_POOL} gelernten
-            Wörtern geht es hier los.
+            {t('quiz.notEnoughBody', { min: MIN_POOL })}
           </div>
           <button onClick={onGoFlashcards} style={{ ...primaryBtn, marginTop: 16 }}>
-            Zu den Karteikarten
+            {t('quiz.toFlashcards')}
           </button>
         </div>
       </div>
@@ -119,13 +122,13 @@ export default function QuizSession({ allItems, progressMap, onExit, onGoFlashca
         {header}
         <div style={{ ...card, padding: '2rem 1.5rem', textAlign: 'center' }}>
           <Sparkles size={22} color={C.gold} style={{ marginBottom: 10 }} />
-          <div style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.lg, marginBottom: SPACE.sm }}>Quiz abgeschlossen</div>
+          <div style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.lg, marginBottom: SPACE.sm }}>{t('quiz.done')}</div>
           <div style={{ fontSize: FONT.base, color: C.textSoft }}>
-            {correct} von {round.length} richtig. {resultLine(correct, round.length)}
+            {t('quiz.score', { correct, total: round.length })} {t(resultKey(correct, round.length))}
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 14, marginTop: 16 }}>
-            <button onClick={restart} style={primaryBtn}>Nochmal</button>
-            <button onClick={onExit} style={backBtn}>Zur Startseite</button>
+            <button onClick={restart} style={primaryBtn}>{t('quiz.again')}</button>
+            <button onClick={onExit} style={backBtn}>{t('quiz.toHome')}</button>
           </div>
         </div>
       </div>
@@ -153,7 +156,7 @@ export default function QuizSession({ allItems, progressMap, onExit, onGoFlashca
       <div style={{ ...card, padding: '1.25rem' }}>
         <ProgressBar pct={index / round.length} />
         <div style={{ fontSize: FONT.sm, color: C.textSoft, textAlign: 'center', margin: `8px 0 ${SPACE.lg}px` }}>
-          Frage {index + 1}/{round.length} · {correct} richtig
+          {t('quiz.progress', { n: index + 1, total: round.length, correct })}
         </div>
 
         <div style={{ textAlign: 'center', marginBottom: 14 }}>
@@ -162,12 +165,12 @@ export default function QuizSession({ allItems, progressMap, onExit, onGoFlashca
               {target.ar}
             </div>
           ) : (
-            <div style={{ fontSize: FONT.xl, fontWeight: 500 }}>{target.de}</div>
+            <div style={{ fontSize: FONT.xl, fontWeight: 500 }}>{meaning(target, lang)}</div>
           )}
         </div>
 
         <div style={{ fontSize: FONT.sm, color: C.text, textAlign: 'center', marginBottom: SPACE.md }}>
-          {isAr2De ? 'Was bedeutet das?' : 'Welches Wort passt?'}
+          {isAr2De ? t('quiz.whatMeaning') : t('quiz.whichWord')}
         </div>
 
         <div className="quiz-options-grid">
@@ -191,7 +194,7 @@ export default function QuizSession({ allItems, progressMap, onExit, onGoFlashca
                   display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 44,
                 }}
               >
-                {isAr2De ? opt.de : (
+                {isAr2De ? meaning(opt, lang) : (
                   <span dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: FONT.arSm, lineHeight: 1.3 }}>{opt.ar}</span>
                 )}
               </button>
@@ -202,10 +205,10 @@ export default function QuizSession({ allItems, progressMap, onExit, onGoFlashca
         {selected && (
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: FONT.base, color: C.text, marginBottom: SPACE.md }}>
-              <span dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: FONT.arSm }}>{target.ar}</span> = {target.de}
+              <span dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: FONT.arSm }}>{target.ar}</span> = {meaning(target, lang)}
             </div>
             <button onClick={next} style={primaryBtn}>
-              {isLast ? 'Ergebnis anzeigen' : 'Nächste Frage'}
+              {isLast ? t('quiz.showResult') : t('quiz.nextQuestion')}
             </button>
           </div>
         )}

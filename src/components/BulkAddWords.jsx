@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { parseVocabLines, slugUnit } from '../utils/parseVocabList.js';
+import { useT, useLang } from '../i18n/i18n.jsx';
 import { C, card, backBtn, primaryBtn, inputStyle, fieldLabel, FONT } from '../theme.js';
 
 const NEW_CHAPTER = '__new__';
@@ -10,6 +11,9 @@ const NEW_CHAPTER = '__new__';
 // own book in one go. Same fields, same "learner's own material" model —
 // this only ever writes to customVocab, never to the built-in vocab files.
 export default function BulkAddWords({ bookId, units, exitLabel, onSave, onCancel }) {
+  const { t, tn } = useT();
+  const lang = useLang();
+  const unitTitle = (u) => (lang === 'en' ? (u.titleEn ?? u.titleDe) : u.titleDe);
   const [unit, setUnit] = useState(units[0]?.id || NEW_CHAPTER);
   const [newChapterName, setNewChapterName] = useState('');
   const [text, setText] = useState('');
@@ -36,39 +40,38 @@ export default function BulkAddWords({ bookId, units, exitLabel, onSave, onCance
   return (
     <div>
       <button onClick={onCancel} style={{ ...backBtn, marginBottom: 14 }}>
-        <ArrowLeft size={15} /> {exitLabel || 'Zurück'}
+        <ArrowLeft size={15} /> {exitLabel || t('common.back')}
       </button>
 
       <div style={{ ...card, padding: '1.25rem' }}>
-        <div style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.lg, marginBottom: 4 }}>Vokabelliste einfügen</div>
+        <div style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.lg, marginBottom: 4 }}>{t('bulkAdd.title')}</div>
         <div style={{ fontSize: FONT.sm, color: C.textSoft, marginBottom: 14 }}>
-          Ein Wort pro Zeile: <code>Arabisch / Deutsch / Umschrift? / Wurzel? / Wurzelbedeutung?</code> —
-          nur Arabisch und Deutsch sind Pflicht. Die Felder selbst dürfen kein „/" enthalten.
+          {t('bulkAdd.formatHelp')} <code>{t('bulkAdd.formatCode')}</code> {t('bulkAdd.formatNote')}
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div>
-            <span style={label}>Kapitel</span>
+            <span style={label}>{t('bulkAdd.chapter')}</span>
             <select value={unit} onChange={(e) => setUnit(e.target.value)} style={inputStyle}>
-              {units.map((u) => <option key={u.id} value={u.id}>{u.titleDe}</option>)}
-              <option value={NEW_CHAPTER}>+ Neues Kapitel</option>
+              {units.map((u) => <option key={u.id} value={u.id}>{unitTitle(u)}</option>)}
+              <option value={NEW_CHAPTER}>{t('bulkAdd.newChapter')}</option>
             </select>
           </div>
 
           {unit === NEW_CHAPTER && (
             <div>
-              <span style={label}>Name des neuen Kapitels</span>
+              <span style={label}>{t('bulkAdd.newChapterName')}</span>
               <input
                 value={newChapterName}
                 onChange={(e) => setNewChapterName(e.target.value)}
-                placeholder="z. B. Essen & Trinken"
+                placeholder={t('bulkAdd.newChapterPlaceholder')}
                 style={inputStyle}
               />
             </div>
           )}
 
           <div>
-            <span style={label}>Wortliste</span>
+            <span style={label}>{t('bulkAdd.wordList')}</span>
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
@@ -80,11 +83,10 @@ export default function BulkAddWords({ bookId, units, exitLabel, onSave, onCance
 
           {text.trim() && (
             <div style={{ fontSize: FONT.sm, color: C.textSoft }}>
-              {parsed.entries.length} Wort{parsed.entries.length === 1 ? '' : 'e'} erkannt
+              {tn('bulkAdd.recognized', parsed.entries.length)}
               {parsed.errors.length > 0 && (
                 <span style={{ color: C.danger }}>
-                  {' '}· {parsed.errors.length} Zeile{parsed.errors.length === 1 ? '' : 'n'} übersprungen (Zeile{' '}
-                  {parsed.errors.map((e) => e.line).join(', ')})
+                  {tn('bulkAdd.skipped', parsed.errors.length, { lines: parsed.errors.map((e) => e.line).join(', ') })}
                 </span>
               )}
             </div>
@@ -101,7 +103,7 @@ export default function BulkAddWords({ bookId, units, exitLabel, onSave, onCance
             cursor: canSave ? 'pointer' : 'default',
           }}
         >
-          {parsed.entries.length > 0 ? `${parsed.entries.length} Wörter hinzufügen` : 'Wörter hinzufügen'}
+          {parsed.entries.length > 0 ? t('bulkAdd.addWords', { count: parsed.entries.length }) : t('bulkAdd.addWordsEmpty')}
         </button>
       </div>
     </div>

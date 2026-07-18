@@ -13,7 +13,9 @@ export const BOOK_META = [
     title: 'العربية اليومية للمبتدئين',
     subtitle: 'مفردات حسب الموضوع',
     titleDe: 'Alltagsarabisch — Einsteiger',
+    titleEn: 'Everyday Arabic — Beginner',
     descDe: 'Grundwortschatz für Anfänger, nach Themen geordnet.',
+    descEn: 'Core vocabulary for beginners, organized by theme.',
     level: 'A1',
     accent: '#0F766E',
   },
@@ -22,7 +24,9 @@ export const BOOK_META = [
     title: 'أساسيات القرآن',
     subtitle: 'الجذور الشائعة',
     titleDe: 'Quran-Kernwortschatz',
+    titleEn: 'Quran Core Vocabulary',
     descDe: 'Häufige Wurzeln des Quran, in Wurzelfamilien gruppiert.',
+    descEn: 'Common Quranic roots, grouped into root families.',
     level: 'A2',
     accent: '#A16207',
   },
@@ -31,7 +35,9 @@ export const BOOK_META = [
     title: '٨٠٪ من كلمات القرآن',
     subtitle: 'قوائم مصنّفة',
     titleDe: '80 % der Quran-Wörter',
+    titleEn: '80% of Quran Words',
     descDe: 'Die häufigsten Wörter des Quran, nach Wortart geordnet.',
+    descEn: 'The most frequent words of the Quran, organized by part of speech.',
     level: 'A2',
     accent: '#3A6B8C',
   },
@@ -40,7 +46,9 @@ export const BOOK_META = [
     title: 'عائلات الجذور',
     subtitle: 'من الوُرزِ-إكسبلورر',
     titleDe: 'Wurzelfamilien',
+    titleEn: 'Root Families',
     descDe: 'Wörter, die du im Wurzel-Explorer entdeckt und übernommen hast.',
+    descEn: 'Words you discovered and saved in the Root Explorer.',
     level: '—',
     accent: '#7C5CBF',
   },
@@ -73,15 +81,21 @@ const trailingRank = (name) => {
 };
 
 // Numbered thematic chapters first (١، ٢، ٣ …), then the grammatical
-// categories at the end without numbers.
+// categories at the end without numbers. Sorting and trailing detection stay
+// on the German `name` (always present, language-stable); the English display
+// title (`titleEn`) is derived in parallel from `nameEn`.
 function orderAndNumber(units) {
   const normal = units.filter((u) => !isTrailingUnit(u.name));
   const trailing = units
     .filter((u) => isTrailingUnit(u.name))
     .sort((a, b) => trailingRank(a.name) - trailingRank(b.name));
   return [
-    ...normal.map((u, i) => ({ ...u, titleDe: `${toArabicNumeral(i + 1)} · ${u.name}` })),
-    ...trailing.map((u) => ({ ...u, titleDe: u.name })),
+    ...normal.map((u, i) => ({
+      ...u,
+      titleDe: `${toArabicNumeral(i + 1)} · ${u.name}`,
+      titleEn: `${toArabicNumeral(i + 1)} · ${u.nameEn}`,
+    })),
+    ...trailing.map((u) => ({ ...u, titleDe: u.name, titleEn: u.nameEn })),
   ];
 }
 
@@ -96,7 +110,14 @@ export function buildBookTree(customVocab = []) {
     const unitMap = new Map();
     for (const v of items) {
       if (!unitMap.has(v.unit)) {
-        unitMap.set(v.unit, { id: v.unit, name: baseUnitName(v.unitDe || v.unit), items: [] });
+        unitMap.set(v.unit, {
+          id: v.unit,
+          name: baseUnitName(v.unitDe || v.unit),
+          // Englischer Anzeigename; fällt auf den deutschen zurück, wenn kein
+          // unitEn gepflegt ist (z.B. Alt-Eigenwörter ohne Englisch).
+          nameEn: baseUnitName(v.unitEn || v.unitDe || v.unit),
+          items: [],
+        });
       }
       unitMap.get(v.unit).items.push(v);
     }

@@ -1,4 +1,5 @@
 import { Delete } from 'lucide-react';
+import { useT } from '../i18n/i18n.jsx';
 import { C, FONT } from '../theme.js';
 
 // The Arabic alphabet in traditional order, plus the common hamza/alef
@@ -15,6 +16,7 @@ const LETTERS = [
 // phone's tap-to-select virtual keyboard), so production cards would
 // otherwise be nearly untypable on a laptop.
 export default function ArabicKeyboard({ onKey, onBackspace }) {
+  const { t } = useT();
   const keyStyle = {
     fontFamily: 'Amiri, serif', fontSize: FONT.arSm, padding: '8px 0', minHeight: 40,
     border: `1px solid ${C.border}`, borderRadius: 8, touchAction: 'manipulation',
@@ -31,7 +33,7 @@ export default function ArabicKeyboard({ onKey, onBackspace }) {
       <button
         type="button"
         onClick={onBackspace}
-        aria-label="Löschen"
+        aria-label={t('keyboard.delete')}
         style={{
           ...keyStyle, gridColumn: 'span 2',
           display: 'flex', alignItems: 'center', justifyContent: 'center',

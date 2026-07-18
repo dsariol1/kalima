@@ -1,33 +1,29 @@
 import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { login, register, requestPasswordReset } from '../auth/pocketbase.js';
+import { useT } from '../i18n/i18n.jsx';
 import { C, card, primaryBtn, inputStyle, fieldLabel, linkBtn, FONT, SPACE } from '../theme.js';
 
 // Pflicht-Gate vor der App. Drei Modi in einer Karte: Anmelden, Registrieren,
 // Passwort zurücksetzen. Nach erfolgreichem Login/Register aktualisiert der
 // authStore.onChange in App.jsx den Zustand — hier ist kein onSuccess nötig.
 
-const TITLES = {
-  login: 'Anmelden',
-  register: 'Konto erstellen',
-  reset: 'Passwort zurücksetzen',
-};
-
-// PocketBase liefert strukturierte Feldfehler; die häufigsten hier auf Deutsch,
-// sonst die Rohmeldung als Fallback.
-function errorText(e, mode) {
+// PocketBase liefert strukturierte Feldfehler; die häufigsten übersetzt,
+// sonst die Rohmeldung als Fallback. `t` kommt aus useT().
+function errorText(t, e, mode) {
   // status 0 = kein HTTP-Response (Server nicht erreichbar / offline).
-  if (!e?.status) return 'Keine Verbindung zum Server. Bitte später erneut versuchen.';
-  if (e.status === 400 && mode === 'login') return 'E-Mail oder Passwort ist falsch.';
+  if (!e?.status) return t('login.errors.noConnection');
+  if (e.status === 400 && mode === 'login') return t('login.errors.badCredentials');
   const data = e?.response?.data;
   if (data && typeof data === 'object') {
     const first = Object.values(data)[0];
     if (first?.message) return first.message;
   }
-  return e?.message || 'Etwas ist schiefgelaufen.';
+  return e?.message || t('login.errors.generic');
 }
 
 export default function Login() {
+  const { t } = useT();
   const [mode, setMode] = useState('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -54,16 +50,16 @@ export default function Login() {
         await register(email, password);
       } else {
         await requestPasswordReset(email);
-        setNotice('Falls ein Konto zu dieser E-Mail existiert, wurde ein Link zum Zurücksetzen gesendet.');
+        setNotice(t('login.resetSent'));
       }
       // Bei Login/Register übernimmt authStore.onChange das Weiterrendern.
     } catch (err) {
       // Sonderfall: Registrierung ok, aber E-Mail-Bestätigung ist Pflicht →
       // authWithPassword schlägt fehl. Als Hinweis statt Fehler zeigen.
       if (mode === 'register' && err?.status === 401) {
-        setNotice('Konto erstellt. Bitte bestätige zuerst deine E-Mail-Adresse.');
+        setNotice(t('login.registerConfirm'));
       } else {
-        setError(errorText(err, mode));
+        setError(errorText(t, err, mode));
       }
     } finally {
       setBusy(false);
@@ -86,11 +82,11 @@ export default function Login() {
 
         <form onSubmit={onSubmit} style={{ ...card, padding: '1.5rem' }}>
           <h1 style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.xl, fontWeight: 600, margin: '0 0 1.25rem' }}>
-            {TITLES[mode]}
+            {t(`login.titles.${mode}`)}
           </h1>
 
           <label style={{ display: 'block', marginBottom: 14 }}>
-            <span style={fieldLabel}>E-Mail</span>
+            <span style={fieldLabel}>{t('login.email')}</span>
             <input
               type="email"
               autoComplete="email"
@@ -103,7 +99,7 @@ export default function Login() {
 
           {mode !== 'reset' && (
             <label style={{ display: 'block', marginBottom: 14 }}>
-              <span style={fieldLabel}>Passwort</span>
+              <span style={fieldLabel}>{t('login.password')}</span>
               <div style={{ position: 'relative' }}>
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -117,7 +113,7 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => setShowPassword((s) => !s)}
-                  aria-label={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
+                  aria-label={showPassword ? t('login.hidePassword') : t('login.showPassword')}
                   style={{
                     position: 'absolute', right: 4, top: 0, bottom: 0, width: 36,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -129,7 +125,7 @@ export default function Login() {
               </div>
               {mode === 'register' && (
                 <span style={{ ...fieldLabel, fontSize: FONT.xs, display: 'block', marginTop: SPACE.xs }}>
-                  Mindestens 8 Zeichen.
+                  {t('login.minChars')}
                 </span>
               )}
             </label>
@@ -146,7 +142,7 @@ export default function Login() {
             ...primaryBtn, width: '100%', padding: '11px', fontSize: FONT.base,
             opacity: busy ? 0.6 : 1, cursor: busy ? 'default' : 'pointer',
           }}>
-            {busy ? 'Bitte warten …' : TITLES[mode]}
+            {busy ? t('login.pleaseWait') : t(`login.titles.${mode}`)}
           </button>
 
           <div style={{
@@ -156,16 +152,16 @@ export default function Login() {
             {mode === 'login' && (
               <>
                 <button type="button" style={linkBtn} onClick={() => switchMode('register')}>
-                  Neues Konto erstellen
+                  {t('login.createAccount')}
                 </button>
                 <button type="button" style={{ ...linkBtn, color: C.textSoft }} onClick={() => switchMode('reset')}>
-                  Passwort vergessen?
+                  {t('login.forgotPassword')}
                 </button>
               </>
             )}
             {mode !== 'login' && (
               <button type="button" style={linkBtn} onClick={() => switchMode('login')}>
-                ← Zurück zur Anmeldung
+                {t('login.backToLogin')}
               </button>
             )}
           </div>

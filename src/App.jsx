@@ -18,6 +18,8 @@ import RootExplorer from './components/RootExplorer.jsx';
 import Login from './components/Login.jsx';
 import { pb, logout } from './auth/pocketbase.js';
 import { useSync } from './hooks/useSync.js';
+import { LangProvider, DEFAULT_LANG, makeT } from './i18n/i18n.jsx';
+import { bookTitle } from './i18n/content.js';
 import { C, card, backBtn, FONT, SPACE } from './theme.js';
 
 // Top-level state machine: 'home' (Dashboard mit Lernwerkzeugen) ->
@@ -45,6 +47,9 @@ export default function App() {
   // prefers-color-scheme media query in index.css decides. Applied to
   // <html data-theme> so it wins the cascade over the media query.
   const [theme, setThemeState] = useState('system');
+  // Anzeigesprache 'de' | 'en'. Schaltet UI-Chrome UND Bedeutungssprache der
+  // Vokabeln (ein Schalter für beides). Persistiert wie theme.
+  const [lang, setLangState] = useState(DEFAULT_LANG);
   // Pflicht-Login: bis ein gültiger Auth-Token da ist, rendert nur der
   // Login-Screen. pb.authStore ist über Dexie persistiert (auth/pocketbase.js).
   const [authed, setAuthed] = useState(pb.authStore.isValid);
@@ -52,13 +57,14 @@ export default function App() {
   // Kompletter Zustand aus Dexie. Wird beim Mount geladen und nach einem Sync,
   // der Remote-Änderungen gezogen hat, erneut ausgeführt (onSynced).
   const loadAll = useCallback(async () => {
-    const [p, c, r, n, t, h] = await Promise.all([
+    const [p, c, r, n, t, h, l] = await Promise.all([
       loadProgress(),
       loadCustomVocab(),
       getSetting('retention', DEFAULT_RETENTION),
       getSetting('newPerSession', DEFAULT_NEW_PER_SESSION),
       getSetting('theme', 'system'),
       getSetting('harakat', true),
+      getSetting('lang', DEFAULT_LANG),
     ]);
     setProgressMap(p);
     setCustomVocab(c);
@@ -67,6 +73,7 @@ export default function App() {
     configureRetention(r);
     setThemeState(t);
     setHarakat(h);
+    setLangState(l);
   }, []);
 
   useEffect(() => { loadAll(); }, [loadAll]);
@@ -160,10 +167,11 @@ export default function App() {
     if (!book) return '';
     if (scope.unitId) {
       const u = book.units.find((x) => x.id === scope.unitId);
-      return `${book.titleDe} · ${u?.titleDe || ''}`;
+      const unitTitle = (lang === 'en' ? (u?.titleEn ?? u?.titleDe) : u?.titleDe) || '';
+      return `${bookTitle(book, lang)} · ${unitTitle}`;
     }
-    return book.titleDe;
-  }, [scope, tree]);
+    return bookTitle(book, lang);
+  }, [scope, tree, lang]);
 
   const saveWord = useCallback(async (entry) => {
     await addCustomVocab(entry);
@@ -214,6 +222,11 @@ export default function App() {
     setSetting('theme', t);
   }, []);
 
+  const handleLangChange = useCallback((l) => {
+    setLangState(l);
+    setSetting('lang', l);
+  }, []);
+
   const handleHarakatChange = useCallback(() => {
     setHarakat((h) => {
       setSetting('harakat', !h);
@@ -224,8 +237,10 @@ export default function App() {
   // Pflicht-Gate: ohne Anmeldung nichts als der Login-Screen. Steht bewusst vor
   // dem Lade-Guard — alles darunter läuft nur authentifiziert (keine dualen
   // Gast-/Konto-Pfade).
+  const { t } = makeT(lang);
+
   if (!authed) {
-    return <Login />;
+    return <LangProvider lang={lang}><Login /></LangProvider>;
   }
 
   if (progressMap === null) {
@@ -233,6 +248,7 @@ export default function App() {
   }
 
   return (
+    <LangProvider lang={lang}>
     <div style={{
       fontFamily: 'Inter, sans-serif', backgroundColor: C.bg, minHeight: '100vh',
       color: C.text, padding: '1.5rem 1rem 3rem',
@@ -259,13 +275,13 @@ export default function App() {
                 color: harakat ? C.primary : C.textSoft, cursor: 'pointer', minHeight: 32,
               }}
             >
-              Harakat {harakat ? 'an' : 'aus'}
+              {harakat ? t('header.harakatOn') : t('header.harakatOff')}
             </button>
           )}
           {view === 'home' && (
             <button
               onClick={() => setView('settings')}
-              aria-label="Einstellungen"
+              aria-label={t('header.settingsAria')}
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 width: 34, height: 34, borderRadius: 999, background: 'transparent',
@@ -292,9 +308,9 @@ export default function App() {
         {view === 'books' && (
           <>
             <button onClick={() => setView('home')} style={{ ...backBtn, marginBottom: '1rem' }}>
-              <ArrowLeft size={15} /> Start
+              <ArrowLeft size={15} /> {t('common.start')}
             </button>
-            <div style={{ fontSize: FONT.sm, fontWeight: 500, color: C.textSoft, marginBottom: SPACE.sm }}>Bücher</div>
+            <div style={{ fontSize: FONT.sm, fontWeight: 500, color: C.textSoft, marginBottom: SPACE.sm }}>{t('nav.books')}</div>
             <BookList
               tree={tree}
               progressMap={progressMap}
@@ -315,19 +331,21 @@ export default function App() {
         {view === 'settings' && (
           <>
             <button onClick={() => setView('home')} style={{ ...backBtn, marginBottom: '1rem' }}>
-              <ArrowLeft size={15} /> Start
+              <ArrowLeft size={15} /> {t('common.start')}
             </button>
             <div style={{ ...card, padding: '1.25rem' }}>
               <h2 style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.xl, fontWeight: 600, margin: '0 0 0.5rem' }}>
-                Einstellungen
+                {t('settings.heading')}
               </h2>
               <Settings
                 retention={retention}
                 newPerSession={newPerSession}
                 theme={theme}
+                lang={lang}
                 onRetentionChange={handleRetentionChange}
                 onNewPerSessionChange={handleNewPerSessionChange}
                 onThemeChange={handleThemeChange}
+                onLangChange={handleLangChange}
                 syncStatus={sync.status}
                 lastSyncedAt={sync.lastSyncedAt}
                 userEmail={pb.authStore.record?.email}
@@ -353,7 +371,7 @@ export default function App() {
           <ReviewSession
             scope={scope}
             scopeLabel={scopeLabel}
-            exitLabel={selectedBook?.titleDe || 'Buch'}
+            exitLabel={selectedBook ? bookTitle(selectedBook, lang) : t('common.book')}
             progressMap={progressMap}
             customVocab={customVocab}
             harakat={harakat}
@@ -368,7 +386,7 @@ export default function App() {
           <AddWord
             bookId={selectedBookId}
             units={selectedBook ? selectedBook.units : []}
-            exitLabel={selectedBook?.titleDe || 'Buch'}
+            exitLabel={selectedBook ? bookTitle(selectedBook, lang) : t('common.book')}
             onSave={saveWord}
             onCancel={() => setView('bookDetail')}
           />
@@ -378,7 +396,7 @@ export default function App() {
           <BulkAddWords
             bookId={selectedBookId}
             units={selectedBook ? selectedBook.units : []}
-            exitLabel={selectedBook?.titleDe || 'Buch'}
+            exitLabel={selectedBook ? bookTitle(selectedBook, lang) : t('common.book')}
             onSave={saveBulkWords}
             onCancel={() => setView('bookDetail')}
           />
@@ -407,6 +425,7 @@ export default function App() {
         </div>
       )}
     </div>
+    </LangProvider>
   );
 }
 

@@ -1,5 +1,7 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, Volume2, Plus, Minus, CheckCircle2, Sparkles } from 'lucide-react';
+import { useT, useLang } from '../i18n/i18n.jsx';
+import { meaning, rootMeaningText, patternMeaningText, typeText, exampleText, bookTitle } from '../i18n/content.js';
 import { C, card, backBtn, linkBtn, primaryBtn, pill, FONT } from '../theme.js';
 import { BUILTIN_VOCAB, BOOK_META } from '../data/books.js';
 import { ROOT_FAMILIES, ROOT_KEYS, WORD_INDEX, normalizeCitation } from '../data/rootFamilies.js';
@@ -27,25 +29,26 @@ const REL_COLORS = {
   Ergebnis: 'var(--accent-result)',
 };
 
-const BOOK_TITLE = Object.fromEntries(BOOK_META.map((b) => [b.id, b.titleDe]));
+const BOOK_BY_ID = Object.fromEntries(BOOK_META.map((b) => [b.id, b]));
 
 // Verankerung an den echten Vokabeldaten (Builtin + selbst gelernte
 // Explorer-Wörter): Häkchen + Fundstelle für Wörter, die es schon in den
 // Lernwortschatz geschafft haben. Match über normalizeCitation (siehe
 // rootFamilies.js) statt komplett harakat-freiem Text — sonst würden
-// Homographe wie مَدْرَسَة/مُدَرِّسَة verwechselt.
+// Homographe wie مَدْرَسَة/مُدَرِّسَة verwechselt. Buch-Objekt + Unit-Felder
+// werden roh gespeichert; die sprachabhängige Anzeige löst der Aufrufer.
 function buildKnownMap(customVocab) {
   const map = new Map();
   for (const v of [...BUILTIN_VOCAB, ...customVocab]) {
     const key = normalizeCitation(v.ar);
-    if (!map.has(key)) map.set(key, { book: BOOK_TITLE[v.bookId] || v.bookId, unitDe: v.unitDe });
+    if (!map.has(key)) map.set(key, { book: BOOK_BY_ID[v.bookId] || null, bookId: v.bookId, unitDe: v.unitDe, unitEn: v.unitEn });
   }
   return map;
 }
 
-// Frequenz als Wort statt Punkte — verständlicher fürs Lernen als eine
-// abstrakte Punkteskala (Sterne würden nach Qualität/Bewertung aussehen).
-const FREQ_LABEL = { 5: 'Sehr häufig', 4: 'Häufig', 3: 'Gebräuchlich', 2: 'Selten', 1: 'Sehr selten' };
+// Anzeigetext für eine bekannte Fundstelle, sprachabhängig aufgelöst.
+const knownBookText = (k, lang) => (k.book ? bookTitle(k.book, lang) : k.bookId);
+const knownUnitText = (k, lang) => (lang === 'en' ? (k.unitEn ?? k.unitDe) : k.unitDe);
 
 // Knotengröße nach Häufigkeit: wichtige Wörter größer, seltene kleiner —
 // die Wortfamilie bekommt so eine visuelle Hierarchie.
@@ -97,7 +100,7 @@ const QUIZ_POOL = ROOT_KEYS.flatMap((key) =>
 const PATTERN_GROUPS = (() => {
   const map = new Map();
   for (const w of QUIZ_POOL) {
-    if (!map.has(w.pattern)) map.set(w.pattern, { pattern: w.pattern, patternMeaning: w.patternMeaning, words: [] });
+    if (!map.has(w.pattern)) map.set(w.pattern, { pattern: w.pattern, patternMeaning: w.patternMeaning, patternMeaningEn: w.patternMeaningEn, words: [] });
     map.get(w.pattern).words.push(w);
   }
   return [...map.values()].sort((a, b) => b.words.length - a.words.length);
@@ -140,6 +143,8 @@ function pickQuestion(avoidId) {
 // Tipp einzeln aufgedeckt werden — wer ohne Tipp richtig liegt, hat das
 // Muster wirklich verinnerlicht, nicht nur abgelesen.
 function PatternQuiz({ onExit, onJumpToWord }) {
+  const { t } = useT();
+  const lang = useLang();
   const [question, setQuestion] = useState(() => pickQuestion(null));
   const [selected, setSelected] = useState(null);
   const [hints, setHints] = useState({ root: false, pattern: false });
@@ -169,25 +174,25 @@ function PatternQuiz({ onExit, onJumpToWord }) {
     <div style={{ ...card, padding: '1.25rem 1rem', maxWidth: 560, margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <span style={{ fontSize: 12.5, color: C.textSoft, display: 'flex', alignItems: 'center', gap: 5 }}>
-          <Sparkles size={14} color={C.gold} /> Muster-Quiz
+          <Sparkles size={14} color={C.gold} /> {t('rootExplorer.patternQuiz')}
         </span>
-        <span style={{ fontSize: 12.5, color: C.textSoft }}>{score.correct}/{score.total} richtig · {score.noHint} ohne Tipp</span>
+        <span style={{ fontSize: 12.5, color: C.textSoft }}>{t('rootExplorer.scoreLine', { correct: score.correct, total: score.total, noHint: score.noHint })}</span>
       </div>
 
       <div style={{ textAlign: 'center', marginBottom: 14 }}>
         {isAr2De ? (
           <RootedWord segments={target.segments} size={34} rootColor={REL_COLORS[target.relation] || C.primary} patternColor={C.textSoft} />
         ) : (
-          <div style={{ fontSize: 20, fontWeight: 500 }}>{target.de}</div>
+          <div style={{ fontSize: 20, fontWeight: 500 }}>{meaning(target, lang)}</div>
         )}
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginBottom: 14 }}>
         <button onClick={() => setHints((h) => ({ ...h, root: true }))} disabled={hints.root} style={{ ...linkBtn, opacity: hints.root ? 0.4 : 1 }}>
-          Tipp: Wurzel
+          {t('rootExplorer.hintRoot')}
         </button>
         <button onClick={() => setHints((h) => ({ ...h, pattern: true }))} disabled={hints.pattern} style={{ ...linkBtn, opacity: hints.pattern ? 0.4 : 1 }}>
-          Tipp: Muster
+          {t('rootExplorer.hintPattern')}
         </button>
       </div>
 
@@ -195,21 +200,21 @@ function PatternQuiz({ onExit, onJumpToWord }) {
         <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 14, flexWrap: 'wrap' }}>
           {hints.root && (
             <div style={{ fontSize: 12, color: C.textSoft, textAlign: 'center' }}>
-              <div>Wurzel · {target.root.join(' ')}</div>
-              <div style={{ fontWeight: 500 }}>{target.rootMeaning}</div>
+              <div>{t('rootExplorer.rootLabel')} · {target.root.join(' ')}</div>
+              <div style={{ fontWeight: 500 }}>{rootMeaningText(target, lang)}</div>
             </div>
           )}
           {hints.pattern && (
             <div style={{ fontSize: 12, color: C.textSoft, textAlign: 'center' }}>
-              <div dir="rtl">Muster (وزن) · {target.pattern}</div>
-              <div style={{ fontWeight: 500, maxWidth: 220 }}>{target.patternMeaning}</div>
+              <div dir="rtl">{t('rootExplorer.patternLabel')} · {target.pattern}</div>
+              <div style={{ fontWeight: 500, maxWidth: 220 }}>{patternMeaningText(target, lang)}</div>
             </div>
           )}
         </div>
       )}
 
       <div style={{ fontSize: 13, color: C.text, textAlign: 'center', marginBottom: 12 }}>
-        {isAr2De ? 'Was bedeutet das?' : 'Welches Wort passt?'}
+        {isAr2De ? t('quiz.whatMeaning') : t('quiz.whichWord')}
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
@@ -233,7 +238,7 @@ function PatternQuiz({ onExit, onJumpToWord }) {
                 display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 40,
               }}
             >
-              {isAr2De ? opt.de : <RootedWord segments={opt.segments} size={17} rootColor={color} patternColor={color} patternOpacity={0.6} />}
+              {isAr2De ? meaning(opt, lang) : <RootedWord segments={opt.segments} size={17} rootColor={color} patternColor={color} patternOpacity={0.6} />}
             </button>
           );
         })}
@@ -242,17 +247,17 @@ function PatternQuiz({ onExit, onJumpToWord }) {
       {selected && (
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: 12.5, color: C.textSoft, marginBottom: 10 }}>
-            {target.ar} = {target.rootMeaning} (Wurzel) + {target.patternMeaning.split(' — ')[0]} (Muster)
+            {t('rootExplorer.explain', { ar: target.ar, rootMeaning: rootMeaningText(target, lang), patternHead: patternMeaningText(target, lang).split(' — ')[0] })}
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 14, flexWrap: 'wrap' }}>
-            <button onClick={next} style={primaryBtn}>Nächste Frage</button>
-            <button onClick={() => onJumpToWord(target.rootKey, target.id)} style={linkBtn}>Im Explorer ansehen</button>
+            <button onClick={next} style={primaryBtn}>{t('quiz.nextQuestion')}</button>
+            <button onClick={() => onJumpToWord(target.rootKey, target.id)} style={linkBtn}>{t('rootExplorer.viewInExplorer')}</button>
           </div>
         </div>
       )}
 
       <div style={{ textAlign: 'center', marginTop: 14 }}>
-        <button onClick={onExit} style={{ ...linkBtn, justifyContent: 'center' }}><ArrowLeft size={13} /> Zurück zum Explorer</button>
+        <button onClick={onExit} style={{ ...linkBtn, justifyContent: 'center' }}><ArrowLeft size={13} /> {t('rootExplorer.backToExplorer')}</button>
       </div>
     </div>
   );
@@ -263,21 +268,23 @@ function PatternQuiz({ onExit, onJumpToWord }) {
 // z.B. مَفْعَل bei drei verschiedenen Wurzeln denselben Ortsbezug erzeugt.
 // Volle Breite, 2 Spalten auf Desktop.
 function PatternLens({ onJumpToWord }) {
+  const { tn } = useT();
+  const lang = useLang();
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(420px, 100%), 1fr))', gap: 12, alignItems: 'start' }}>
       {PATTERN_GROUPS.map((g) => (
         <div key={g.pattern} style={{ ...card, padding: '0.9rem 1rem' }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 }}>
             <span dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: 22, color: C.primary }}>{g.pattern}</span>
-            <span style={{ fontSize: 11, color: C.textSoft }}>{g.words.length} Wörter</span>
+            <span style={{ fontSize: 11, color: C.textSoft }}>{tn('common.words', g.words.length)}</span>
           </div>
-          <div style={{ fontSize: 12.5, color: C.textSoft, marginBottom: 10, lineHeight: 1.4 }}>{g.patternMeaning}</div>
+          <div style={{ fontSize: 12.5, color: C.textSoft, marginBottom: 10, lineHeight: 1.4 }}>{patternMeaningText(g, lang)}</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {g.words.map((w) => (
               <button
                 key={`${w.rootKey}-${w.id}`}
                 onClick={() => onJumpToWord(w.rootKey, w.id)}
-                aria-label={`${w.ar} – ${w.de}`}
+                aria-label={`${w.ar} – ${meaning(w, lang)}`}
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: 6,
                   border: `1px solid ${C.border}`, borderRadius: 999, padding: '4px 10px',
@@ -285,7 +292,7 @@ function PatternLens({ onJumpToWord }) {
                 }}
               >
                 <RootedWord segments={w.segments} size={15} rootColor={REL_COLORS[w.relation] || C.primary} patternColor={C.textSoft} />
-                <span style={{ fontSize: 12, color: C.textSoft }}>— {w.de}</span>
+                <span style={{ fontSize: 12, color: C.textSoft }}>— {meaning(w, lang)}</span>
               </button>
             ))}
           </div>
@@ -298,6 +305,7 @@ function PatternLens({ onJumpToWord }) {
 // Segmentierte Ansichts-Umschaltung [Wurzeln | Muster | Quiz] — ein
 // Navigationskonzept für alle drei Modi statt verstreuter Einzellinks.
 function ViewSwitch({ view, onChange }) {
+  const { t } = useT();
   const seg = (key, label) => (
     <button
       aria-pressed={view === key}
@@ -314,14 +322,18 @@ function ViewSwitch({ view, onChange }) {
   );
   return (
     <div style={{ display: 'inline-flex', border: `1px solid ${C.border}`, borderRadius: 999, overflow: 'hidden', flexShrink: 0 }}>
-      {seg('graph', 'Wurzeln')}
-      {seg('patterns', 'Muster')}
-      {seg('quiz', 'Quiz')}
+      {seg('graph', t('rootExplorer.viewSwitch.roots'))}
+      {seg('patterns', t('rootExplorer.viewSwitch.patterns'))}
+      {seg('quiz', t('rootExplorer.viewSwitch.quiz'))}
     </div>
   );
 }
 
 export default function RootExplorer({ onBack, initialRootKey, initialCenterAr, customVocab = [], onLearnWord }) {
+  const { t } = useT();
+  const lang = useLang();
+  const relationLabel = (rel) => t(`rootExplorer.relation.${rel}`);
+  const freqLabel = (n) => t(`rootExplorer.freq.${n}`);
   const [rootKey, setRootKey] = useState(initialRootKey && ROOT_FAMILIES[initialRootKey] ? initialRootKey : 'كتب');
   const [view, setView] = useState('graph'); // 'graph' | 'patterns' | 'quiz'
   const family = ROOT_FAMILIES[rootKey];
@@ -412,13 +424,16 @@ export default function RootExplorer({ onBack, initialRootKey, initialCenterAr, 
       bookId: 'roots',
       unit: rootKey,
       unitDe: `${family.root.join(' ')} – ${family.rootMeaning}`,
+      unitEn: `${family.root.join(' ')} – ${family.rootMeaningEn ?? family.rootMeaning}`,
       pos: center.type.toLowerCase().startsWith('verb') ? 'verb' : 'noun',
       ar: center.ar,
       bare: center.bare,
       translit: '',
       de: center.de,
+      en: center.en ?? null,
       root: family.root,
       rootMeaning: family.rootMeaning,
+      rootMeaningEn: family.rootMeaningEn ?? null,
       example: center.example,
     });
   };
@@ -427,11 +442,11 @@ export default function RootExplorer({ onBack, initialRootKey, initialCenterAr, 
   const detailPanel = (
     <div style={{ ...card, padding: '1.1rem 1.25rem' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, gap: 8 }}>
-        <span style={pill(REL_COLORS[center.relation] || C.textSoft)}>{center.relation} · {center.type}</span>
-        <span style={{ fontSize: 11.5, color: C.textSoft, marginInlineStart: 'auto', marginInlineEnd: 8 }}>{FREQ_LABEL[center.frequency]}</span>
+        <span style={pill(REL_COLORS[center.relation] || C.textSoft)}>{relationLabel(center.relation)} · {typeText(center, lang)}</span>
+        <span style={{ fontSize: 11.5, color: C.textSoft, marginInlineStart: 'auto', marginInlineEnd: 8 }}>{freqLabel(center.frequency)}</span>
         <button
           disabled
-          title="Audio folgt später"
+          title={t('rootExplorer.audioSoon')}
           style={{ ...linkBtn, color: C.textSoft, cursor: 'default', opacity: 0.5 }}
         >
           <Volume2 size={16} />
@@ -439,32 +454,32 @@ export default function RootExplorer({ onBack, initialRootKey, initialCenterAr, 
       </div>
 
       <RootedWord segments={center.segments} size={30} rootColor={REL_COLORS[center.relation] || C.primary} patternColor={C.textSoft} />
-      <div style={{ fontSize: 15, fontWeight: 500, margin: '4px 0 6px' }}>{center.de}</div>
+      <div style={{ fontSize: 15, fontWeight: 500, margin: '4px 0 6px' }}>{meaning(center, lang)}</div>
       {centerKnown ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: C.primary, marginBottom: 10 }}>
           <CheckCircle2 size={14} />
-          Schon in deinem Wortschatz — {centerKnown.book}, {centerKnown.unitDe}
+          {t('rootExplorer.inVocab', { book: knownBookText(centerKnown, lang), unit: knownUnitText(centerKnown, lang) })}
         </div>
       ) : onLearnWord && (
         <button onClick={learnWord} style={{ ...primaryBtn, padding: '6px 14px', fontSize: 12.5, marginBottom: 10 }}>
-          Als Vokabel lernen
+          {t('rootExplorer.learnAsVocab')}
         </button>
       )}
 
       {/* وزن — das Wortmuster, prominent statt in der Grammatik-Notiz versteckt. */}
       <div style={{ backgroundColor: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: '10px 12px', marginBottom: 10 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 }}>
-          <span style={{ fontSize: 11, color: C.textSoft, fontWeight: 500 }}>Muster (وزن)</span>
+          <span style={{ fontSize: 11, color: C.textSoft, fontWeight: 500 }}>{t('rootExplorer.patternLabel')}</span>
           <span dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: 20, color: REL_COLORS[center.relation] || C.primary }}>{center.pattern}</span>
         </div>
-        <div style={{ fontSize: 12.5, color: C.textSoft, lineHeight: 1.4 }}>{center.patternMeaning}</div>
+        <div style={{ fontSize: 12.5, color: C.textSoft, lineHeight: 1.4 }}>{patternMeaningText(center, lang)}</div>
       </div>
 
       {/* Parallelen aus anderen Wurzeln, gleiches Muster — klickbar, wenn
           das Wort tatsächlich Teil einer ausgearbeiteten Familie ist (dann
           springt der Explorer dorthin); sonst nur Anzeige. */}
       <div style={{ marginBottom: 10 }}>
-        <div style={{ fontSize: 11, color: C.textSoft, fontWeight: 500, marginBottom: 6 }}>Gleiches Muster, andere Wurzeln</div>
+        <div style={{ fontSize: 11, color: C.textSoft, fontWeight: 500, marginBottom: 6 }}>{t('rootExplorer.samePattern')}</div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           {center.parallels.map((p) => {
             const match = WORD_INDEX.get(normalizeCitation(p.ar));
@@ -481,7 +496,7 @@ export default function RootExplorer({ onBack, initialRootKey, initialCenterAr, 
                 }}
               >
                 <span dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: 15, color: clickable ? C.primary : C.text }}>{p.ar}</span>
-                <span style={{ color: clickable ? C.primary : C.textSoft }}>— {p.de}</span>
+                <span style={{ color: clickable ? C.primary : C.textSoft }}>— {meaning(p, lang)}</span>
               </Tag>
             );
           })}
@@ -490,7 +505,7 @@ export default function RootExplorer({ onBack, initialRootKey, initialCenterAr, 
 
       <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 10 }}>
         <div dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: 18, marginBottom: 3 }}>{center.example.ar}</div>
-        <div style={{ fontSize: 13, color: C.textSoft, fontStyle: 'italic' }}>„{center.example.de}"</div>
+        <div style={{ fontSize: 13, color: C.textSoft, fontStyle: 'italic' }}>„{exampleText(center.example, lang)}"</div>
       </div>
     </div>
   );
@@ -498,7 +513,7 @@ export default function RootExplorer({ onBack, initialRootKey, initialCenterAr, 
   return (
     <div ref={wrapRef}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.9rem' }}>
-        <button onClick={onBack} style={backBtn}><ArrowLeft size={15} /> Zurück</button>
+        <button onClick={onBack} style={backBtn}><ArrowLeft size={15} /> {t('common.back')}</button>
         <div style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.md, fontWeight: 700, color: C.text, lineHeight: 1 }}>
           Kalima<span style={{ color: C.gold }}>+</span>
         </div>
@@ -522,7 +537,7 @@ export default function RootExplorer({ onBack, initialRootKey, initialCenterAr, 
             <span dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: 14 }}>
               {ROOT_FAMILIES[key].root.join(' ')}
             </span>
-            {ROOT_FAMILIES[key].rootMeaning.split(',')[0]}
+            {rootMeaningText(ROOT_FAMILIES[key], lang).split(',')[0]}
           </button>
         ))}
         <div style={{ marginInlineStart: 'auto' }}>
@@ -536,14 +551,14 @@ export default function RootExplorer({ onBack, initialRootKey, initialCenterAr, 
           <span dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: 34, letterSpacing: 8, color: C.primary, fontWeight: 700, lineHeight: 1.2 }}>
             {family.root.join(' ')}
           </span>
-          <span style={{ fontSize: 13, color: C.textSoft }}>Wurzel · {family.rootMeaning}</span>
+          <span style={{ fontSize: 13, color: C.textSoft }}>{t('rootExplorer.rootLabel')} · {rootMeaningText(family, lang)}</span>
         </div>
       )}
       {view === 'patterns' && (
         <div style={{ marginBottom: 14, borderBottom: `1px solid ${C.border}`, paddingBottom: 10 }}>
-          <span style={{ fontFamily: 'Fraunces, serif', fontSize: 19, fontWeight: 600 }}>Muster (وزن) über alle Wurzeln</span>
+          <span style={{ fontFamily: 'Fraunces, serif', fontSize: 19, fontWeight: 600 }}>{t('rootExplorer.patternsTitle')}</span>
           <span style={{ fontSize: 12.5, color: C.textSoft, marginInlineStart: 10 }}>
-            Gleiches Muster = gleiche Funktion — egal, welche Wurzel eingesetzt wird.
+            {t('rootExplorer.patternsSubtitle')}
           </span>
         </div>
       )}
@@ -586,8 +601,8 @@ export default function RootExplorer({ onBack, initialRootKey, initialCenterAr, 
                     <button
                       key={w.id}
                       onClick={() => setCenterId(w.id)}
-                      aria-label={`${w.ar} – ${w.de}`}
-                      title={wKnown ? `${FREQ_LABEL[w.frequency]} · schon in ${wKnown.book}` : FREQ_LABEL[w.frequency]}
+                      aria-label={`${w.ar} – ${meaning(w, lang)}`}
+                      title={wKnown ? `${freqLabel(w.frequency)} · ${t('rootExplorer.knownInTitle', { book: knownBookText(wKnown, lang) })}` : freqLabel(w.frequency)}
                       style={{
                         position: 'absolute', left: '50%', top: '50%',
                         transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
@@ -609,7 +624,7 @@ export default function RootExplorer({ onBack, initialRootKey, initialCenterAr, 
                       <RootedWord segments={w.segments} size={(compact ? 18 : size.ar) * denseScale} rootColor={relColor} patternColor={C.textSoft} />
                       {!compact && (
                         <>
-                          <span style={{ fontSize: size.de * denseScale, color: C.textSoft }}>{w.de}</span>
+                          <span style={{ fontSize: size.de * denseScale, color: C.textSoft }}>{meaning(w, lang)}</span>
                           <span dir="rtl" lang="ar" style={{ fontSize: size.pattern * denseScale, color: C.textSoft, opacity: 0.7 }}>{w.pattern}</span>
                         </>
                       )}
@@ -635,7 +650,7 @@ export default function RootExplorer({ onBack, initialRootKey, initialCenterAr, 
                     />
                   )}
                   <RootedWord segments={center.segments} size={30} rootColor="#FFFFFF" patternColor="#FFFFFF" patternOpacity={0.55} />
-                  <span style={{ fontSize: 12 }}>{center.de}</span>
+                  <span style={{ fontSize: 12 }}>{meaning(center, lang)}</span>
                   <span dir="rtl" lang="ar" style={{ fontSize: 11, opacity: 0.75 }}>{center.pattern}</span>
                 </div>
               </div>
@@ -643,13 +658,13 @@ export default function RootExplorer({ onBack, initialRootKey, initialCenterAr, 
 
             {/* Unterzeile: Hinweis · Legende · Mehr/Weniger — linksbündig. */}
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, marginTop: 10 }}>
-              <span style={{ fontSize: 11.5, color: C.textSoft }}>Tippe ein Wort, um es ins Zentrum zu holen.</span>
+              <span style={{ fontSize: 11.5, color: C.textSoft }}>{t('rootExplorer.tapHint')}</span>
               {Object.entries(REL_COLORS).map(([rel, color]) => (
-                <span key={rel} style={pill(color)}>{rel}</span>
+                <span key={rel} style={pill(color)}>{relationLabel(rel)}</span>
               ))}
               <button onClick={() => setShowRare((s) => !s)} style={linkBtn}>
                 {showRare ? <Minus size={14} /> : <Plus size={14} />}
-                {showRare ? 'Seltene Ableitungen ausblenden' : 'Weitere Ableitungen'}
+                {showRare ? t('rootExplorer.hideRare') : t('rootExplorer.showRare')}
               </button>
             </div>
           </div>

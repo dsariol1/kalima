@@ -1,5 +1,6 @@
 import { BookX, ChevronRight } from 'lucide-react';
 import { countDueFresh } from '../srs/cards.js';
+import { useT } from '../i18n/i18n.jsx';
 import { C, card, FONT, SPACE } from '../theme.js';
 import BookHeader from './BookHeader.jsx';
 
@@ -7,6 +8,7 @@ import BookHeader from './BookHeader.jsx';
 // deeper in BookDetail, so this stays a single decision (which book), not a
 // wall of every chapter across every book at once.
 export default function BookList({ tree, progressMap, onSelectBook }) {
+  const { t, tn } = useT();
   const books = tree.filter((book) => book.total > 0);
 
   if (books.length === 0) {
@@ -14,10 +16,10 @@ export default function BookList({ tree, progressMap, onSelectBook }) {
       <div style={{ ...card, padding: '2.5rem 1.5rem', textAlign: 'center' }}>
         <BookX size={22} color={C.textSoft} style={{ marginBottom: 10 }} />
         <div style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.lg, marginBottom: SPACE.sm }}>
-          Noch keine Bücher
+          {t('books.noBooksTitle')}
         </div>
         <div style={{ fontSize: FONT.base, color: C.textSoft }}>
-          Es sind aktuell keine Bücher mit Wörtern verfügbar.
+          {t('books.noBooksBody')}
         </div>
       </div>
     );
@@ -42,9 +44,9 @@ export default function BookList({ tree, progressMap, onSelectBook }) {
 
             <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ fontSize: FONT.sm, color: C.textSoft }}>
-                {items.length} Wörter
-                {due > 0 && <span style={{ color: C.primary, fontWeight: 500 }}> · {due} fällig</span>}
-                {fresh > 0 && ` · ${fresh} neu`}
+                {tn('common.words', items.length)}
+                {due > 0 && <span style={{ color: C.primary, fontWeight: 500 }}>{t('books.dueSuffix', { due })}</span>}
+                {fresh > 0 && t('books.freshSuffix', { fresh })}
               </span>
               <ChevronRight size={16} color={C.textSoft} />
             </div>

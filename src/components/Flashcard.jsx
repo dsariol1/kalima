@@ -2,6 +2,8 @@ import { useRef, useState } from 'react';
 import { Keyboard, Share2 } from 'lucide-react';
 import { checkAnswer } from '../utils/answerCheck.js';
 import ArabicKeyboard from './ArabicKeyboard.jsx';
+import { useT, useLang } from '../i18n/i18n.jsx';
+import { meaning, exampleText, rootMeaningText } from '../i18n/content.js';
 import { C, card as cardStyle, primaryBtn, linkBtn, inputStyle, pill, FONT, SPACE } from '../theme.js';
 import { ROOT_KEYS } from '../data/rootFamilies.js';
 
@@ -10,15 +12,9 @@ import { ROOT_KEYS } from '../data/rootFamilies.js';
 // genau einer davon.
 const ROOT_EXPLORER_DEMO_ROOTS = new Set(ROOT_KEYS);
 
-const BADGE = {
-  recognition: { label: 'Erkennen', color: C.primary },
-  production: { label: 'Produzieren', color: C.gold },
-};
-
-const VERDICT = {
-  correct: { color: C.success, label: '✓ Richtig' },
-  wrong: { color: C.danger, label: '✗ Nicht ganz' },
-};
+// Nur die Farbe ist statisch; die Labels kommen aus den i18n-Dicts.
+const BADGE_COLOR = { recognition: C.primary, production: C.gold };
+const VERDICT_COLOR = { correct: C.success, wrong: C.danger };
 
 function ArabicWord({ card, harakat }) {
   return (
@@ -29,6 +25,8 @@ function ArabicWord({ card, harakat }) {
 }
 
 function RootFamily({ card, family, onExploreRoot }) {
+  const { t } = useT();
+  const lang = useLang();
   if (!card.root) return null;
   const rootKey = card.root.join('');
   const canExplore = onExploreRoot && ROOT_EXPLORER_DEMO_ROOTS.has(rootKey);
@@ -38,14 +36,14 @@ function RootFamily({ card, family, onExploreRoot }) {
         {card.root.join(' ')}
       </div>
       <div style={{ fontSize: FONT.sm, color: C.textSoft, marginBottom: SPACE.sm }}>
-        Wurzel · {card.rootMeaning}
+        {t('flashcard.rootLabel')} · {rootMeaningText(card, lang)}
       </div>
       {canExplore && (
         <button
           onClick={() => onExploreRoot(rootKey, card.ar)}
           style={{ ...linkBtn, margin: '0 auto 10px', justifyContent: 'center' }}
         >
-          <Share2 size={13} /> Wurzelfamilie erkunden
+          <Share2 size={13} /> {t('flashcard.exploreFamily')}
         </button>
       )}
       {family.length > 0 && (
@@ -60,7 +58,7 @@ function RootFamily({ card, family, onExploreRoot }) {
               }}
             >
               <span dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: FONT.arXs }}>{f.ar}</span>
-              <span style={{ color: C.textSoft }}>— {f.de}</span>
+              <span style={{ color: C.textSoft }}>— {meaning(f, lang)}</span>
             </span>
           ))}
         </div>
@@ -70,11 +68,12 @@ function RootFamily({ card, family, onExploreRoot }) {
 }
 
 function Example({ card }) {
+  const lang = useLang();
   if (!card.example) return null;
   return (
     <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 14, paddingTop: 12 }}>
       <div dir="rtl" lang="ar" style={{ fontFamily: 'Amiri, serif', fontSize: FONT.arSm, marginBottom: SPACE.xs }}>{card.example.ar}</div>
-      <div style={{ fontSize: FONT.sm, color: C.textSoft, fontStyle: 'italic' }}>„{card.example.de}"</div>
+      <div style={{ fontSize: FONT.sm, color: C.textSoft, fontStyle: 'italic' }}>„{exampleText(card.example, lang)}"</div>
     </div>
   );
 }
@@ -84,6 +83,8 @@ function Example({ card }) {
 // the typed verdict is a hint, the grade stays the learner's call (FSRS is
 // self-graded throughout the app).
 function ProductionCard({ card, harakat, revealed, onReveal, family, showKeyboard, onToggleKeyboard, onExploreRoot }) {
+  const { t } = useT();
+  const lang = useLang();
   const [input, setInput] = useState('');
   const [correct, setCorrect] = useState(false);
   const inputRef = useRef(null);
@@ -128,7 +129,7 @@ function ProductionCard({ card, harakat, revealed, onReveal, family, showKeyboar
     // keyboard toggle, (keyboard), then the check button underneath.
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-        <div style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.xl, marginBottom: SPACE.xs }}>{card.de}</div>
+        <div style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.xl, marginBottom: SPACE.xs }}>{meaning(card, lang)}</div>
         <input
           ref={inputRef}
           autoFocus
@@ -137,14 +138,14 @@ function ProductionCard({ card, harakat, revealed, onReveal, family, showKeyboar
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}
-          placeholder="مَثَلًا: بَيْت"
+          placeholder={t('flashcard.inputPlaceholder')}
           style={{
             ...inputStyle, textAlign: 'center', marginTop: 0,
             fontFamily: 'Amiri, serif', fontSize: FONT.arMd, padding: '10px 12px',
           }}
         />
         <button type="button" onClick={onToggleKeyboard} style={linkBtn}>
-          <Keyboard size={14} /> {showKeyboard ? 'Tastatur ausblenden' : 'Tastatur einblenden'}
+          <Keyboard size={14} /> {showKeyboard ? t('flashcard.hideKeyboard') : t('flashcard.showKeyboard')}
         </button>
         {showKeyboard && (
           <div style={{ width: '100%' }}>
@@ -152,19 +153,19 @@ function ProductionCard({ card, harakat, revealed, onReveal, family, showKeyboar
           </div>
         )}
         <button onClick={submit} style={primaryBtn}>
-          {input.trim() ? 'Antwort prüfen' : 'Ich weiß es nicht'}
+          {input.trim() ? t('flashcard.checkAnswer') : t('flashcard.dontKnow')}
         </button>
       </div>
     );
   }
 
-  const verdict = input.trim() ? (correct ? VERDICT.correct : VERDICT.wrong) : null;
+  const verdict = input.trim() ? (correct ? 'correct' : 'wrong') : null;
   return (
     <div className="fade-in">
-      <div style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.xl, marginBottom: SPACE.md }}>{card.de}</div>
+      <div style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.xl, marginBottom: SPACE.md }}>{meaning(card, lang)}</div>
       {verdict && (
-        <div style={{ fontSize: FONT.base, fontWeight: 600, color: verdict.color, marginBottom: SPACE.md }}>
-          {verdict.label}
+        <div style={{ fontSize: FONT.base, fontWeight: 600, color: VERDICT_COLOR[verdict], marginBottom: SPACE.md }}>
+          {t(`flashcard.${verdict}`)}
           {!correct && <span style={{ fontWeight: 400, color: C.textSoft }}> · „{input.trim()}"</span>}
         </div>
       )}
@@ -179,14 +180,16 @@ function ProductionCard({ card, harakat, revealed, onReveal, family, showKeyboar
 
 // The Arabic -> German prompt: see the word, recall the meaning, self-grade.
 function RecognitionCard({ card, harakat, revealed, onReveal, family, onExploreRoot }) {
+  const { t } = useT();
+  const lang = useLang();
   return (
     <>
       <ArabicWord card={card} harakat={harakat} />
       {!revealed ? (
-        <button onClick={onReveal} style={{ ...primaryBtn, marginTop: 16 }}>Bedeutung zeigen</button>
+        <button onClick={onReveal} style={{ ...primaryBtn, marginTop: 16 }}>{t('flashcard.showMeaning')}</button>
       ) : (
         <div className="fade-in" style={{ marginTop: 16 }}>
-          <div style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.xl, marginBottom: SPACE.md }}>{card.de}</div>
+          <div style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.xl, marginBottom: SPACE.md }}>{meaning(card, lang)}</div>
           <RootFamily card={card} family={family} onExploreRoot={onExploreRoot} />
           <Example card={card} />
         </div>
@@ -197,7 +200,9 @@ function RecognitionCard({ card, harakat, revealed, onReveal, family, onExploreR
 
 // One vocabulary card, direction-aware. See the two card components above.
 export default function Flashcard({ card, direction, harakat, revealed, onReveal, family, showKeyboard, onToggleKeyboard, onExploreRoot }) {
-  const badge = BADGE[direction];
+  const { t } = useT();
+  const badgeColor = BADGE_COLOR[direction];
+  const badgeLabel = direction === 'production' ? t('flashcard.badgeProduction') : t('flashcard.badgeRecognition');
   const Card = direction === 'production' ? ProductionCard : RecognitionCard;
 
   return (
@@ -210,9 +215,9 @@ export default function Flashcard({ card, direction, harakat, revealed, onReveal
         marginBottom: '1.25rem',
       }}
     >
-      {badge && (
-        <div style={{ ...pill(badge.color), display: 'inline-block', marginBottom: 22 }}>
-          {badge.label}
+      {badgeColor && (
+        <div style={{ ...pill(badgeColor), display: 'inline-block', marginBottom: 22 }}>
+          {badgeLabel}
         </div>
       )}
       <Card

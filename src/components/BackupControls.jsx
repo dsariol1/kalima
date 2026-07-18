@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { Download, Upload } from 'lucide-react';
+import { useT } from '../i18n/i18n.jsx';
 import { C, FONT } from '../theme.js';
 
 
@@ -7,15 +8,16 @@ import { C, FONT } from '../theme.js';
 // in. The actual DB access lives in db.js; this only wires up the download and
 // file-read and reports the outcome. Import merges, so it never wipes progress.
 export default function BackupControls({ onExport, onImport }) {
+  const { t } = useT();
   const fileRef = useRef(null);
   const [status, setStatus] = useState(null); // { kind: 'ok' | 'err', msg }
 
   const doExport = async () => {
     try {
       await onExport();
-      setStatus({ kind: 'ok', msg: 'Sicherung heruntergeladen.' });
+      setStatus({ kind: 'ok', msg: t('backup.exported') });
     } catch {
-      setStatus({ kind: 'err', msg: 'Export fehlgeschlagen.' });
+      setStatus({ kind: 'err', msg: t('backup.exportFailed') });
     }
   };
 
@@ -25,9 +27,9 @@ export default function BackupControls({ onExport, onImport }) {
     if (!file) return;
     try {
       const c = await onImport(file);
-      setStatus({ kind: 'ok', msg: `Importiert: ${c.customVocab} eigene Wörter, ${c.progress} Kartenstände.` });
+      setStatus({ kind: 'ok', msg: t('backup.imported', { vocab: c.customVocab, progress: c.progress }) });
     } catch {
-      setStatus({ kind: 'err', msg: 'Import fehlgeschlagen — ist das eine gültige Sicherungsdatei?' });
+      setStatus({ kind: 'err', msg: t('backup.importFailed') });
     }
   };
 
@@ -42,14 +44,14 @@ export default function BackupControls({ onExport, onImport }) {
       marginTop: '1.5rem', borderTop: `1px solid ${C.border}`, paddingTop: '1rem',
     }}>
       <div style={{ fontSize: FONT.xs, color: C.textSoft, marginBottom: 8 }}>
-        Manuelle Sicherung als Datei — unabhängig von der Cloud-Synchronisierung.
+        {t('backup.note')}
       </div>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         <button onClick={doExport} style={btn}>
-          <Download size={14} /> Exportieren
+          <Download size={14} /> {t('backup.export')}
         </button>
         <button onClick={() => fileRef.current?.click()} style={btn}>
-          <Upload size={14} /> Importieren
+          <Upload size={14} /> {t('backup.import')}
         </button>
         <input
           ref={fileRef}

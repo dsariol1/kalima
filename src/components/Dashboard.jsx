@@ -1,4 +1,5 @@
 import { ChevronRight, Flame, Layers, Puzzle, Sprout } from 'lucide-react';
+import { useT } from '../i18n/i18n.jsx';
 import { C, card, pill, FONT, SPACE } from '../theme.js';
 
 // Startseite: Begrüßung, Tagesfortschritt (Ziel-Ring + Streak) und die
@@ -9,6 +10,7 @@ import { C, card, pill, FONT, SPACE } from '../theme.js';
 // fällig). Ohne fällige Karten und ohne Reviews bleibt der Ring leer statt
 // fälschlich "voll" zu wirken.
 function GoalRing({ done, goal }) {
+  const { t } = useT();
   const size = 64;
   const r = 26;
   const cx = size / 2;
@@ -17,7 +19,7 @@ function GoalRing({ done, goal }) {
   return (
     <div
       role="img"
-      aria-label={goal > 0 ? `${done} von ${goal} Karten heute gelernt` : `${done} Karten heute gelernt`}
+      aria-label={goal > 0 ? t('dashboard.goalRingWithGoal', { done, goal }) : t('dashboard.goalRingNoGoal', { done })}
       style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}
     >
       <svg width={size} height={size} aria-hidden="true">
@@ -37,13 +39,14 @@ function GoalRing({ done, goal }) {
         <span style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.lg, fontWeight: 600, color: C.primary }}>
           {done}
         </span>
-        <span style={{ fontSize: 9, color: C.textSoft }}>heute</span>
+        <span style={{ fontSize: 9, color: C.textSoft }}>{t('dashboard.today')}</span>
       </span>
     </div>
   );
 }
 
 function StreakBadge({ streak }) {
+  const { t, tn } = useT();
   const active = streak > 0;
   return (
     <div style={{ textAlign: 'center', flexShrink: 0 }}>
@@ -56,7 +59,7 @@ function StreakBadge({ streak }) {
         )}
       </div>
       <div style={{ fontSize: FONT.xs, color: C.textSoft, marginTop: 2 }}>
-        {active ? (streak === 1 ? 'Tag-Serie' : 'Tage-Serie') : 'Starte deine Serie'}
+        {active ? tn('dashboard.streak', streak) : t('dashboard.streakNone')}
       </div>
     </div>
   );
@@ -100,26 +103,27 @@ function ToolCard({ tool }) {
 const QUIZ_MIN_POOL = 4;
 
 export default function Dashboard({ todayTotals, doneToday, streak, quizPoolSize, onOpenFlashcards, onOpenQuiz, onOpenExplorer }) {
+  const { t, tn } = useT();
   const hour = new Date().getHours();
-  const greeting = hour < 11 ? 'Guten Morgen' : hour < 18 ? 'Guten Tag' : 'Guten Abend';
+  const greeting = hour < 11 ? t('dashboard.greeting.morning') : hour < 18 ? t('dashboard.greeting.day') : t('dashboard.greeting.evening');
 
   const tools = [
     {
-      id: 'flashcards', name: 'Karteikarten', desc: 'Spaced Repetition mit deinen Büchern.',
+      id: 'flashcards', name: t('dashboard.tools.flashcards.name'), desc: t('dashboard.tools.flashcards.desc'),
       icon: Layers, iconColor: C.primary, iconBg: C.primarySoft,
-      badge: todayTotals.due > 0 ? `${todayTotals.due} fällig` : null, badgeColor: C.primary,
+      badge: todayTotals.due > 0 ? t('dashboard.badgeDue', { due: todayTotals.due }) : null, badgeColor: C.primary,
       onOpen: onOpenFlashcards,
     },
     {
-      id: 'quiz', name: 'Quiz', desc: 'Multiple-Choice mit bereits gelernten Wörtern.',
+      id: 'quiz', name: t('dashboard.tools.quiz.name'), desc: t('dashboard.tools.quiz.desc'),
       icon: Puzzle, iconColor: C.gold, iconBg: C.goldSoft,
-      badge: quizPoolSize >= QUIZ_MIN_POOL ? `${quizPoolSize} Wörter` : null, badgeColor: C.gold,
+      badge: quizPoolSize >= QUIZ_MIN_POOL ? tn('common.words', quizPoolSize) : null, badgeColor: C.gold,
       onOpen: onOpenQuiz,
     },
     {
-      id: 'explorer', name: 'Wurzel-Explorer', desc: 'Wurzelfamilien und Muster erkunden.',
+      id: 'explorer', name: t('dashboard.tools.explorer.name'), desc: t('dashboard.tools.explorer.desc'),
       icon: Sprout, iconColor: C.textSoft, iconBg: C.surfaceMuted,
-      badge: 'Beta', badgeColor: C.textSoft,
+      badge: t('dashboard.beta'), badgeColor: C.textSoft,
       onOpen: onOpenExplorer,
     },
   ];
@@ -138,22 +142,22 @@ export default function Dashboard({ todayTotals, doneToday, streak, quizPoolSize
               <span style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.xl, fontWeight: 600, color: C.primary }}>
                 {todayTotals.due}
               </span>
-              {' '}Karten heute fällig
+              {' '}{t('dashboard.dueSuffix')}
               {todayTotals.fresh > 0 && (
-                <span style={{ fontSize: FONT.sm, color: C.textSoft }}> · {todayTotals.fresh} neu</span>
+                <span style={{ fontSize: FONT.sm, color: C.textSoft }}> {t('dashboard.freshSuffix', { fresh: todayTotals.fresh })}</span>
               )}
             </div>
           ) : (
             <div style={{ fontSize: FONT.base, color: C.textSoft }}>
-              Alles gelernt für heute{todayTotals.fresh > 0 ? ` · ${todayTotals.fresh} neue Karten warten` : ''}
+              {t('dashboard.allLearned')}{todayTotals.fresh > 0 ? t('dashboard.freshWaiting', { fresh: todayTotals.fresh }) : ''}
             </div>
           )}
-          <div style={{ fontSize: FONT.xs, color: C.textSoft, marginTop: 3 }}>{doneToday} heute wiederholt</div>
+          <div style={{ fontSize: FONT.xs, color: C.textSoft, marginTop: 3 }}>{t('dashboard.reviewedToday', { done: doneToday })}</div>
         </div>
         <StreakBadge streak={streak} />
       </div>
 
-      <div style={{ fontSize: FONT.sm, fontWeight: 500, color: C.textSoft, marginBottom: SPACE.sm }}>Lernwerkzeuge</div>
+      <div style={{ fontSize: FONT.sm, fontWeight: 500, color: C.textSoft, marginBottom: SPACE.sm }}>{t('dashboard.toolsHeading')}</div>
       {tools.map((tool) => <ToolCard key={tool.id} tool={tool} />)}
     </>
   );

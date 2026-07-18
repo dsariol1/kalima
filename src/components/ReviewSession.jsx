@@ -6,6 +6,7 @@ import { RATINGS } from '../srs/scheduler.js';
 import Flashcard from './Flashcard.jsx';
 import GradeButtons from './GradeButtons.jsx';
 import ProgressBar from './ProgressBar.jsx';
+import { useT } from '../i18n/i18n.jsx';
 import { C, card, backBtn, primaryBtn, FONT, SPACE } from '../theme.js';
 
 const FIELD_TAGS = new Set(['INPUT', 'TEXTAREA', 'SELECT']);
@@ -13,6 +14,7 @@ const FIELD_TAGS = new Set(['INPUT', 'TEXTAREA', 'SELECT']);
 // A running review session for one scope. Owns nothing about scheduling —
 // that all lives in useReview / the scheduler wrapper.
 export default function ReviewSession({ scope, scopeLabel, exitLabel, progressMap, customVocab, harakat, newPerSession, onProgressChange, onExit, onExploreRoot }) {
+  const { t } = useT();
   const { current, direction, currentCard, revealed, reveal, grade, stats, remaining, total, done } = useReview({
     scope, progressMap, customVocab, onProgressChange, newPerSession,
   });
@@ -56,7 +58,7 @@ export default function ReviewSession({ scope, scopeLabel, exitLabel, progressMa
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
         <button onClick={onExit} style={{ ...backBtn, flexShrink: 0 }}>
-          <ArrowLeft size={15} /> {exitLabel || 'Zurück'}
+          <ArrowLeft size={15} /> {exitLabel || t('common.back')}
         </button>
         <span style={{
           fontSize: FONT.sm, color: C.textSoft, flex: 1, minWidth: 0, textAlign: 'right',
@@ -70,7 +72,7 @@ export default function ReviewSession({ scope, scopeLabel, exitLabel, progressMa
         <>
           <ProgressBar pct={total > 0 ? (total - remaining) / total : 0} />
           <div style={{ fontSize: FONT.xs, color: C.textSoft, textAlign: 'center', marginTop: 8, marginBottom: SPACE.sm }}>
-            noch {remaining} · {stats.reviewed} wiederholt
+            {t('review.remaining', { remaining, reviewed: stats.reviewed })}
           </div>
           <Flashcard
             key={`${current.id}:${direction}`}
@@ -83,16 +85,16 @@ export default function ReviewSession({ scope, scopeLabel, exitLabel, progressMa
       ) : (
         <div style={{ ...card, padding: '2rem 1.5rem', textAlign: 'center' }}>
           <Sparkles size={22} color={C.gold} style={{ marginBottom: 10 }} />
-          <div style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.lg, marginBottom: SPACE.sm }}>Runde abgeschlossen</div>
+          <div style={{ fontFamily: 'Fraunces, serif', fontSize: FONT.lg, marginBottom: SPACE.sm }}>{t('review.roundDone')}</div>
           <div style={{ fontSize: FONT.base, color: C.textSoft }}>
-            {stats.reviewed} Karten geübt
+            {t('review.practiced', { reviewed: stats.reviewed })}
             {stats.again > 0
-              ? ` · ${stats.reviewed - stats.again} gewusst, ${stats.again}× nochmal`
-              : ' · alle gewusst'}
+              ? t('review.summaryKnown', { known: stats.reviewed - stats.again, again: stats.again })
+              : t('review.summaryAll')}
             .
           </div>
           <button onClick={onExit} style={{ ...primaryBtn, marginTop: 16 }}>
-            Zurück zum Buch
+            {t('review.backToBook')}
           </button>
         </div>
       )}

@@ -1,6 +1,6 @@
 // Thin wrapper around ts-fsrs (v5). The rest of the app never imports ts-fsrs
-// directly — it goes through here, so the algorithm is swappable and the
-// German rating labels live in one place.
+// directly — it goes through here, so the algorithm is swappable. Rating labels
+// are UI text and live in the i18n dicts (grades.*), keyed by `key` below.
 
 import { fsrs, generatorParameters, createEmptyCard, Rating, State } from 'ts-fsrs';
 
@@ -39,8 +39,8 @@ export function getRetention() {
 // Simplified to a binary pass/fail — Hard/Easy are unused. Order matters:
 // this is the left-to-right order of the grade buttons.
 export const RATINGS = [
-  { grade: Rating.Again, key: 'again', label: 'Nochmal' },
-  { grade: Rating.Good, key: 'good', label: 'Weiß ich' },
+  { grade: Rating.Again, key: 'again' },
+  { grade: Rating.Good, key: 'good' },
 ];
 
 // A fresh FSRS card for a word that's never been seen.

@@ -1,0 +1,233 @@
+// English UI strings. Mirror of de.js (same key structure).
+// Plural entries are { one, other }, selected via tn(key, count).
+// {var} placeholders filled by t(key, vars) / tn(key, count, vars).
+
+export const en = {
+  common: {
+    back: 'Back',
+    start: 'Start',
+    book: 'Book',
+    words: { one: '{count} word', other: '{count} words' },
+  },
+
+  nav: {
+    books: 'Books',
+  },
+
+  header: {
+    settingsAria: 'Settings',
+    harakatOn: 'Harakat on',
+    harakatOff: 'Harakat off',
+  },
+
+  settings: {
+    heading: 'Settings',
+    appearance: 'Appearance',
+    language: 'Language',
+    theme: { system: 'System', light: 'Light', dark: 'Dark' },
+    retention: 'Target retention',
+    newPerSession: 'New cards per session',
+    newPerSessionHint: '(per direction)',
+    account: 'Account',
+    logout: 'Sign out',
+    sync: {
+      syncing: 'Syncing …',
+      error: 'Offline — changes stay saved locally.',
+      syncedAt: 'Synced · {time}',
+      synced: 'Synced',
+    },
+  },
+
+  grades: {
+    again: 'Again',
+    good: 'I know it',
+    aria: '{label}, next review in {interval}',
+  },
+
+  interval: {
+    now: 'now',
+    min: '{n} min',
+    hr: '{n} h',
+    day: '{n} d',
+    month: '{n} mo',
+    year: '{n} y',
+  },
+
+  dashboard: {
+    greeting: { morning: 'Good morning', day: 'Good afternoon', evening: 'Good evening' },
+    goalRingWithGoal: '{done} of {goal} cards learned today',
+    goalRingNoGoal: '{done} cards learned today',
+    today: 'today',
+    dueSuffix: 'cards due today',
+    freshSuffix: '· {fresh} new',
+    allLearned: 'All done for today',
+    freshWaiting: ' · {fresh} new cards waiting',
+    reviewedToday: '{done} reviewed today',
+    streak: { one: 'day streak', other: 'day streak' },
+    streakNone: 'Start your streak',
+    toolsHeading: 'Learning tools',
+    badgeDue: '{due} due',
+    beta: 'Beta',
+    tools: {
+      flashcards: { name: 'Flashcards', desc: 'Spaced repetition with your books.' },
+      quiz: { name: 'Quiz', desc: 'Multiple choice with words you already learned.' },
+      explorer: { name: 'Root Explorer', desc: 'Explore root families and patterns.' },
+    },
+  },
+
+  review: {
+    remaining: '{remaining} left · {reviewed} reviewed',
+    roundDone: 'Round complete',
+    practiced: '{reviewed} cards practiced',
+    summaryKnown: ' · {known} known, {again}× again',
+    summaryAll: ' · all known',
+    backToBook: 'Back to book',
+  },
+
+  flashcard: {
+    badgeRecognition: 'Recognize',
+    badgeProduction: 'Produce',
+    correct: '✓ Correct',
+    wrong: '✗ Not quite',
+    rootLabel: 'Root',
+    exploreFamily: 'Explore root family',
+    showMeaning: 'Show meaning',
+    checkAnswer: 'Check answer',
+    dontKnow: "I don't know",
+    showKeyboard: 'Show keyboard',
+    hideKeyboard: 'Hide keyboard',
+    inputPlaceholder: 'مَثَلًا: بَيْت',
+  },
+
+  quiz: {
+    label: 'Quiz',
+    notEnoughTitle: 'Not enough learned words yet',
+    notEnoughBody: 'The quiz only asks about words you have already seen in the flashcards. Review a few cards first — it starts here once you have {min} learned words.',
+    toFlashcards: 'Go to flashcards',
+    done: 'Quiz complete',
+    score: '{correct} of {total} correct.',
+    result: {
+      perfect: 'Perfect — all correct!',
+      strong: 'Great, keep it up!',
+      good: 'Well practiced — review pays off.',
+      keepGoing: 'Keep at it — repetition makes the difference.',
+    },
+    again: 'Again',
+    toHome: 'To home',
+    progress: 'Question {n}/{total} · {correct} correct',
+    whatMeaning: 'What does this mean?',
+    whichWord: 'Which word fits?',
+    showResult: 'Show result',
+    nextQuestion: 'Next question',
+  },
+
+  books: {
+    noBooksTitle: 'No books yet',
+    noBooksBody: 'There are currently no books with words available.',
+    dueSuffix: ' · {due} due',
+    freshSuffix: ' · {fresh} new',
+  },
+
+  bookDetail: {
+    wholeBook: 'Practice whole book',
+    wholeBookCounts: '· {due} due, {fresh} new',
+    unitPracticeAria: 'Practice {unit}',
+    unitDueSuffix: ' · {due} due',
+    addWord: 'Add your own word',
+    pasteList: 'Paste word list',
+  },
+
+  login: {
+    titles: { login: 'Sign in', register: 'Create account', reset: 'Reset password' },
+    email: 'Email',
+    password: 'Password',
+    minChars: 'At least 8 characters.',
+    showPassword: 'Show password',
+    hidePassword: 'Hide password',
+    pleaseWait: 'Please wait …',
+    createAccount: 'Create new account',
+    forgotPassword: 'Forgot password?',
+    backToLogin: '← Back to sign in',
+    resetSent: 'If an account exists for this email, a reset link has been sent.',
+    registerConfirm: 'Account created. Please confirm your email address first.',
+    errors: {
+      noConnection: 'No connection to the server. Please try again later.',
+      badCredentials: 'Email or password is incorrect.',
+      generic: 'Something went wrong.',
+    },
+  },
+
+  addWord: {
+    title: 'Add your own word',
+    arLabel: 'Arabic (with harakat)',
+    arPlaceholder: 'مَثَلًا: دَرْس',
+    deLabel: 'Meaning (German)',
+    enLabel: 'Meaning (English, optional)',
+    dePlaceholder: 'e.g. Unterricht, Lektion',
+    enPlaceholder: 'e.g. lesson, class',
+    translitLabel: 'Transliteration (optional)',
+    translitPlaceholder: 'dars',
+    lessonLabel: 'Lesson',
+    ownWords: 'Own words',
+    rootLabel: 'Root (optional)',
+    rootPlaceholder: 'د ر س',
+    rootMeaningLabel: 'Root meaning',
+    rootMeaningPlaceholder: 'to learn',
+    add: 'Add',
+  },
+
+  bulkAdd: {
+    title: 'Paste word list',
+    formatHelp: 'One word per line:',
+    formatCode: 'Arabic / German / Transliteration? / Root? / Root meaning?',
+    formatNote: '— only Arabic and German are required. The fields themselves must not contain a "/".',
+    chapter: 'Chapter',
+    newChapter: '+ New chapter',
+    newChapterName: 'Name of the new chapter',
+    newChapterPlaceholder: 'e.g. Food & Drink',
+    wordList: 'Word list',
+    recognized: { one: '{count} word recognized', other: '{count} words recognized' },
+    skipped: { one: ' · {count} line skipped (line {lines})', other: ' · {count} lines skipped (lines {lines})' },
+    addWords: 'Add {count} words',
+    addWordsEmpty: 'Add words',
+  },
+
+  backup: {
+    note: 'Manual backup as a file — independent of cloud sync.',
+    export: 'Export',
+    import: 'Import',
+    exported: 'Backup downloaded.',
+    exportFailed: 'Export failed.',
+    imported: 'Imported: {vocab} own words, {progress} card states.',
+    importFailed: 'Import failed — is this a valid backup file?',
+  },
+
+  keyboard: {
+    delete: 'Delete',
+  },
+
+  rootExplorer: {
+    patternQuiz: 'Pattern quiz',
+    scoreLine: '{correct}/{total} correct · {noHint} without hint',
+    hintRoot: 'Hint: root',
+    hintPattern: 'Hint: pattern',
+    rootLabel: 'Root',
+    patternLabel: 'Pattern (وزن)',
+    explain: '{ar} = {rootMeaning} (root) + {patternHead} (pattern)',
+    viewInExplorer: 'View in Explorer',
+    backToExplorer: 'Back to Explorer',
+    viewSwitch: { roots: 'Roots', patterns: 'Patterns', quiz: 'Quiz' },
+    audioSoon: 'Audio coming later',
+    inVocab: 'Already in your vocabulary — {book}, {unit}',
+    learnAsVocab: 'Learn as vocab',
+    samePattern: 'Same pattern, other roots',
+    patternsTitle: 'Patterns (وزن) across all roots',
+    patternsSubtitle: 'Same pattern = same function — no matter which root is used.',
+    tapHint: 'Tap a word to bring it to the center.',
+    showRare: 'More derivations',
+    hideRare: 'Hide rare derivations',
+    knownInTitle: 'already in {book}',
+    relation: { Handlung: 'Action', Person: 'Person', Ort: 'Place', Ergebnis: 'Result' },
+    freq: { 5: 'Very common', 4: 'Common', 3: 'Fairly common', 2: 'Rare', 1: 'Very rare' },
+  },
+};
