@@ -258,8 +258,93 @@ Kein Backend, kein Build-Server außer lokalem `npm run dev`.
 - customVocab/Bulk-Import schreiben nie in die eingebauten Vokabeldateien,
   nur in die lokale Dexie-Datenbank.
 
+## Update 2026-07-18 — Multi-User-Auth-Sync + UI-Polish + eigenes Backend
+
+Der Abschnitt "Visuelles Design" oben und "kein Backend nötig" unter
+"Bekannte offene Punkte" sind überholt — Details hier:
+
+**Auth + Cloud-Sync (nicht mehr reine Client-App):**
+Pflicht-Login vor der App (src/components/Login.jsx — Anmelden/Registrieren/
+Passwort-zurücksetzen in einer Karte). Auth-Layer: src/auth/pocketbase.js
+(einziger Ort, der das `pocketbase`-SDK importiert), Token liegt in Dexie
+`settings` (kein localStorage). Sync: src/db/sync.js + src/hooks/useSync.js,
+fire-and-forget, kein Latenz-Einfluss auf den Review-Hot-Path. db.js kennt
+PocketBase nie direkt. Vier Server-Collections (progress, customVocab,
+reviews, settings), je mit `owner`-Relation + `clientUpdatedAt` fürs
+Last-Write-Wins, siehe deploy/SCHEMA.md.
+
+**Eigenes Backend (Hetzner VPS, nicht mehr "kein Backend nötig"):**
+PocketBase self-hosted auf Hetzner CX22 (159.69.44.248), Debian/Ubuntu,
+systemd-Service, Caddy davor mit Auto-HTTPS unter
+`https://api.kalima.sariol.ch`. Setup-Runbook: deploy/README.md,
+Schema-Doku: deploy/SCHEMA.md. SSH gehärtet (kein Root-/Passwort-Login,
+nur Key-Auth über `deploy`-User). Frontend-Anbindung über
+`VITE_POCKETBASE_URL` (lokal `.env`, produktiv Vercel Env Var).
+
+Offen: Backup-Timer auf dem Server noch nicht eingerichtet
+(deploy/backup-pocketbase.sh + .service/.timer liegen bereit, noch nicht
+kopiert/aktiviert). SMTP für "Passwort vergessen" noch nicht konfiguriert.
+Zwei-Konten-Sicherheitstest der API-Rules (siehe SCHEMA.md, letzter
+Abschnitt) noch nicht durchgeführt.
+
+**UI/UX-Politur (Branch feat/ui-design-polish, in main gemerged):**
+Vollständiger Audit (ui-ux-pro-max-Skill) + Umsetzung: Design-Tokens
+(Typo-/Spacing-Skala, Schatten, Akzentfarben in theme.js), ehrliche
+Zurück-Navigation, Play-Icon statt Chevron auf Kapitelzeilen, Mobile-
+Header-Fix, Harakat-Präferenz jetzt persistiert, Touch-Targets ≥44px,
+Skeleton/Empty/Error-States (neu: src/components/ErrorBoundary.jsx),
+Accessibility (lang=ar auf arabischen Textcontainern, aria-Labels,
+GoalRing als role=img), BookHeader-Komponente aus BookList/BookDetail
+extrahiert, Wurzel-Explorer ist jetzt dritte Dashboard-ToolCard (Beta-Pill,
+kein Textlink mehr), Micro-Motion (Kartenwechsel/Reveal/Ring, alles
+prefers-reduced-motion-geschützt), Fortschrittsbalken in Review + Quiz
+(neu: src/components/ProgressBar.jsx), Tastatur-Shortcuts im Review
+(Leertaste/1/2, Anki-Konvention). Bugfix: Quiz-Antwortgitter erzwingt
+festes 2×2 (`.quiz-options-grid` in index.css) statt variablem 3+1 bei
+bestimmten Breiten.
+
+Ein zweiter Anlauf mit dem `/frontend-design`-Skill (neue Font, Tafel-
+Struktur, Jadwal-Motiv) wurde bewusst wieder verworfen — der Nutzer
+bevorzugte den Stand direkt nach dem UI-Polish-Durchlauf.
+
+## Update — Zweite Sprache (Englisch)
+
+Ein Sprachschalter in den Einstellungen (Deutsch/English) schaltet UI-Chrome
+UND Vokabel-Bedeutungssprache gemeinsam. Ziel: Arabisch auch auf Englisch
+lernbar machen, nicht nur auf Deutsch.
+
+**Architektur:** eigener leichtgewichtiger i18n-Context statt externer Lib
+(src/i18n/i18n.jsx: `LangProvider`, `useT()` liefert `t`/`tn` inkl. Plural
++ `{var}`-Interpolation; src/i18n/de.js + en.js: ~180 UI-Strings; src/i18n/
+content.js: Sprachwahl-Helfer für Vokabel-Inhalte mit Fallback auf Deutsch,
+falls kein englisches Feld existiert). Setting-Fluss folgt exakt dem
+bestehenden `theme`-Muster (getSetting/setSetting, Pill-Auswahl in
+Settings.jsx), synct über Konto.
+
+**Datenmodell** additiv erweitert: alle 206 Vokabeln (abyBook1.js 188,
+quranCore.js 18, quran80.js 143 Zeilen/12 Kapitel) tragen jetzt `en`,
+`unitEn`, `rootMeaningEn`, `example.en` neben den deutschen Feldern;
+BOOK_META (titleEn/descEn) und rootFamilies.js (Wurzel-Explorer-
+Wortfamilien) ebenso. Kritischer Punkt: die Sortierlogik der drei
+Spezialkapitel (Pronomen/Adverbien/Präpositionen, unnummeriert ans
+Buchende) vergleicht weiterhin ausschliesslich den deutschen Namen
+(unitDe) — bleibt damit sprachunabhängig stabil, nur der Anzeigename
+wechselt mit der Sprache.
+
+Alle 17 Komponenten + scheduler.js (Grade-Labels) + interval.js
+(Zeiteinheiten) auf t()/tn() umgestellt. AddWord.jsx hat jetzt ein
+optionales "Bedeutung (English)"-Feld, Deutsch bleibt Pflicht. Bewusst
+unverändert (Deutsch belassen): ErrorBoundary.jsx (Klassenkomponente ohne
+Context-Zugriff) und die geworfenen Fehlerstrings in db.js (werden nie
+direkt angezeigt).
+
+Offen: Bulk-Import (parseVocabList.js) unterstützt weiterhin nur das
+bestehende Slash-Format ohne englisches Feld — Fallback auf Deutsch greift.
+Generierte englische Übersetzungen sollten stichprobenartig geprüft werden.
+
 ## Letzter Commit
-d0af3cf feat: Dashboard-Startseite mit Lernwerkzeugen, Quiz, Streak/Tagesziel-Ring
+1a849ca feat: Zweite Sprache (Englisch) für UI und Vokabel-Bedeutungen
 
 Working tree: clean (gepusht auf origin/main, Vercel hat automatisch
-deployt).
+deployt). Branch feat/ui-design-polish existiert weiter auf demselben
+Stand, main ist der aktuelle Auslieferungs-Stand.
